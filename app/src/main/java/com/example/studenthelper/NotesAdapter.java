@@ -9,6 +9,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,6 +21,8 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     public interface NoteListener {
         void onNoteClick(Note note);
         void onDeleteClick(Note note);
+        void onAiTutorClick(Note note);
+        void onQuizClick(Note note);
     }
 
     private final ArrayList<Note> notes = new ArrayList<>();
@@ -69,13 +73,25 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
 
         holder.tvDate.setText(date);
 
-        holder.itemView.setOnClickListener(v ->
-                listener.onNoteClick(note)
-        );
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onNoteClick(note);
+        });
 
-        holder.btnDelete.setOnClickListener(v ->
-                listener.onDeleteClick(note)
-        );
+        holder.btnDelete.setOnClickListener(v -> {
+            if (listener != null) listener.onDeleteClick(note);
+        });
+
+        if (holder.btnAskAi != null) {
+            holder.btnAskAi.setOnClickListener(v -> {
+                if (listener != null) listener.onAiTutorClick(note);
+            });
+        }
+
+        if (holder.btnQuiz != null) {
+            holder.btnQuiz.setOnClickListener(v -> {
+                if (listener != null) listener.onQuizClick(note);
+            });
+        }
     }
 
     @Override
@@ -90,6 +106,8 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         TextView tvTitle;
         TextView tvPreview;
         ImageButton btnDelete;
+        MaterialButton btnAskAi;
+        MaterialButton btnQuiz;
 
         NoteViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -99,6 +117,8 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
             tvTitle = itemView.findViewById(R.id.tvNoteTitle);
             tvPreview = itemView.findViewById(R.id.tvNotePreview);
             btnDelete = itemView.findViewById(R.id.btnDeleteNote);
+            btnAskAi = itemView.findViewById(R.id.btnNoteAskAi);
+            btnQuiz = itemView.findViewById(R.id.btnNoteQuiz);
         }
     }
 }

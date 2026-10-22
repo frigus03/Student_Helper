@@ -1,0 +1,23 @@
+Subject: Computer Science 301 - Algorithm Analysis
+Topic: Dynamic Programming and Memoization
+
+Overview:
+Dynamic Programming (DP) is an algorithmic optimization paradigm used when a problem has:
+1. Overlapping Subproblems: The same subproblems are solved repeatedly in a naive recursive solution.
+2. Optimal Substructure: The optimal solution of the overall problem is composed of optimal solutions to its subproblems.
+
+Core Approaches:
+- Top-Down with Memoization: Use recursion with a cache (hash map or array) to store already calculated subproblem answers. Time complexity drops from exponential O(2^n) to polynomial O(n).
+- Bottom-Up with Tabulation: Iteratively solve smaller subproblems first and build up the answer in a DP table without recursive call stack overhead.
+
+Key Example: Fibonacci Numbers
+F(n) = F(n-1) + F(n-2) with base cases F(0) = 0, F(1) = 1.
+Naive recursion: O(2^n) time complexity.
+Memoized DP: O(n) time, O(n) space.
+Space-optimized DP: O(n) time, O(1) space by only tracking the last two values.
+
+Common DP Problems:
+- 0/1 Knapsack Problem
+- Longest Common Subsequence (LCS)
+- Shortest Path (Floyd-Warshall, Bellman-Ford)
+- Matrix Chain Multiplication

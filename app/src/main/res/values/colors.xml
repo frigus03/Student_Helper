@@ -10,6 +10,7 @@
     <color name="background">#F8F9FD</color>
     <color name="surface">#FFFFFF</color>
     <color name="surface_card">#FFFFFF</color>
+    <color name="banner_bg">#F3F1FD</color>
 
     <!-- Typography -->
     <color name="text_primary">#1C1F37</color>
@@ -28,6 +29,10 @@
 
     <color name="blue_light">#E7F0FF</color>
     <color name="pink_light">#FCE9F2</color>
+
+    <color name="priority_high">#D92D20</color>
+    <color name="priority_medium">#D97706</color>
+    <color name="priority_low">#1B9360</color>
 
     <!-- Utility -->
     <color name="white">#FFFFFF</color>

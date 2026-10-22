@@ -15,6 +15,7 @@ public class Note {
     private long createdAt;
     private String fileUrl;
     private String fileName;
+    private String aiSummary;
 
     public Note() {
         // Default constructor required for calls to DataSnapshot.getValue(Note.class)
@@ -41,7 +42,8 @@ public class Note {
             String content,
             long createdAt,
             String fileUrl,
-            String fileName
+            String fileName,
+            String aiSummary
     ) {
         this.id = id;
         this.title = title;
@@ -50,6 +52,7 @@ public class Note {
         this.createdAt = createdAt;
         this.fileUrl = fileUrl;
         this.fileName = fileName;
+        this.aiSummary = aiSummary;
     }
 
     @Exclude
@@ -108,5 +111,13 @@ public class Note {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public String getAiSummary() {
+        return aiSummary;
+    }
+
+    public void setAiSummary(String aiSummary) {
+        this.aiSummary = aiSummary;
     }
 }

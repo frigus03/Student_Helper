@@ -29,7 +29,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                tools:text="Machine Learning"
+                tools:text="Physics"
                 android:textColor="@color/primary"
                 android:textSize="12sp"
                 android:textStyle="bold"/>
@@ -49,7 +49,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            tools:text="Introduction to Machine Learning"
+            tools:text="Newton's Laws of Motion"
             android:textColor="@color/text_primary"
             android:textSize="17sp"
             android:textStyle="bold"
@@ -67,26 +67,56 @@
             android:maxLines="3"
             android:ellipsize="end"/>
 
+        <!-- Action Row: AI Tutor & Quiz right on the note! -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="14dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Tap to read"
-                android:textColor="@color/primary"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNoteAskAi"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:minWidth="0dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:text="💬 Ask AI"
                 android:textSize="12sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:textColor="@color/primary"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/primary_light"
+                app:cornerRadius="10dp"
+                app:elevation="0dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNoteQuiz"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:layout_marginStart="8dp"
+                android:minWidth="0dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:text="⚡ Practice Quiz"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary"
+                android:textAllCaps="false"
+                app:backgroundTint="@color/primary_light"
+                app:cornerRadius="10dp"
+                app:elevation="0dp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
 
             <ImageButton
                 android:id="@+id/btnDeleteNote"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Delete note"
                 android:src="@android:drawable/ic_menu_delete"

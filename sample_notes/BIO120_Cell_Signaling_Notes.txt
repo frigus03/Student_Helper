@@ -1,0 +1,15 @@
+Subject: Biology 120 - Cellular Biology
+Topic: Cell Signaling and Signal Transduction Pathways
+
+Three Stages of Cell Signaling:
+1. Reception: The target cell detects a signaling molecule (ligand) binding to a receptor protein on the cell surface or inside the cell.
+2. Transduction: The binding alters the receptor protein, triggering a cascade of intracellular molecular interactions (signal transduction pathway).
+3. Response: The transduced signal initiates a specific cellular activity, such as gene expression, enzymatic activation, or cellular rearrangement.
+
+Major Receptor Types:
+- G-Protein Coupled Receptors (GPCRs): Work with G-proteins that bind GDP (inactive) or GTP (active).
+- Receptor Tyrosine Kinases (RTKs): Possess enzymatic activity; dimerize upon ligand binding and autophosphorylate tyrosine residues.
+- Ion Channel Receptors: Ligand-gated channels that open or close in response to specific chemical signals.
+
+Second Messengers:
+Small, non-protein, water-soluble molecules or ions that spread rapidly by diffusion (e.g., Cyclic AMP [cAMP], Calcium ions [Ca2+], IP3).

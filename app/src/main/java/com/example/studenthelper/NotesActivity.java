@@ -27,16 +27,28 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
+
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class NotesActivity extends AppCompatActivity {
+
+    private static final String UPLOAD_API_URL = "http://10.0.2.2:3000/api/upload";
 
     private NotesAdapter notesAdapter;
 
@@ -50,8 +62,8 @@ public class NotesActivity extends AppCompatActivity {
     
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
-    private FirebaseStorage storage;
     private ListenerRegistration notesListener;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private ActivityResultLauncher<String> filePickerLauncher;
     private Uri pendingUploadUri = null;
@@ -66,7 +78,6 @@ public class NotesActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
-        storage = FirebaseStorage.getInstance();
 
         setupFilePicker();
         initializeViews();
@@ -153,12 +164,32 @@ public class NotesActivity extends AppCompatActivity {
         notesAdapter = new NotesAdapter(new NotesAdapter.NoteListener() {
             @Override
             public void onNoteClick(Note note) {
-                showAddNoteDialog(note);
+                showNoteDetailDialog(note);
             }
 
             @Override
             public void onDeleteClick(Note note) {
                 confirmDeleteNote(note);
+            }
+
+            @Override
+            public void onAiTutorClick(Note note) {
+                Intent intent = new Intent(NotesActivity.this, AssistantActivity.class);
+                intent.putExtra(AssistantActivity.EXTRA_CONTEXT, note.getContent());
+                intent.putExtra(AssistantActivity.EXTRA_SUBJECT, note.getSubject());
+                intent.putExtra(AssistantActivity.EXTRA_NOTE_TITLE, note.getTitle());
+                intent.putExtra(AssistantActivity.EXTRA_NOTE_ID, note.getId());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onQuizClick(Note note) {
+                Intent intent = new Intent(NotesActivity.this, QuizActivity.class);
+                intent.putExtra(QuizActivity.EXTRA_SUBJECT, note.getSubject());
+                intent.putExtra(QuizActivity.EXTRA_MATERIAL, note.getContent());
+                intent.putExtra(QuizActivity.EXTRA_NOTE_TITLE, note.getTitle());
+                intent.putExtra(QuizActivity.EXTRA_NOTE_ID, note.getId());
+                startActivity(intent);
             }
         });
 
@@ -232,6 +263,285 @@ public class NotesActivity extends AppCompatActivity {
         }
     }
 
+    private void showNoteDetailDialog(Note note) {
+        if (note == null) return;
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        int padding = dp(20);
+        layout.setPadding(padding, dp(16), padding, dp(16));
+
+        // 1. Subject pill badge
+        TextView tvSubjectBadge = new TextView(this);
+        tvSubjectBadge.setText(note.getSubject() != null ? note.getSubject().toUpperCase(Locale.ROOT) : "COURSE");
+        tvSubjectBadge.setTextSize(11);
+        tvSubjectBadge.setTextColor(getColor(R.color.primary));
+        tvSubjectBadge.setTypeface(null, android.graphics.Typeface.BOLD);
+        tvSubjectBadge.setPadding(dp(10), dp(4), dp(10), dp(4));
+        tvSubjectBadge.setBackgroundResource(R.drawable.bg_badge_primary_light);
+        
+        LinearLayout.LayoutParams subjectParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        subjectParams.bottomMargin = dp(8);
+        layout.addView(tvSubjectBadge, subjectParams);
+
+        // 2. Note Title
+        TextView tvTitle = new TextView(this);
+        tvTitle.setText(note.getTitle());
+        tvTitle.setTextSize(22);
+        int titleColor = com.google.android.material.color.MaterialColors.getColor(
+                this,
+                com.google.android.material.R.attr.colorOnSurface,
+                getColor(R.color.text_primary)
+        );
+        tvTitle.setTextColor(titleColor);
+        tvTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+        layout.addView(tvTitle);
+
+        // 3. Attachment section
+        if (note.getFileName() != null && !note.getFileName().trim().isEmpty()) {
+            LinearLayout attachCard = new LinearLayout(this);
+            attachCard.setOrientation(LinearLayout.HORIZONTAL);
+            attachCard.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            attachCard.setBackgroundResource(R.drawable.bg_card);
+            attachCard.setPadding(dp(14), dp(12), dp(14), dp(12));
+
+            TextView tvFile = new TextView(this);
+            tvFile.setText("📎 " + note.getFileName());
+            tvFile.setTextSize(14);
+            tvFile.setTextColor(getColor(R.color.text_primary));
+            tvFile.setTypeface(null, android.graphics.Typeface.BOLD);
+            LinearLayout.LayoutParams fileParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+            attachCard.addView(tvFile, fileParams);
+
+            MaterialButton btnViewPdf = new MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
+            btnViewPdf.setText("Open Material");
+            btnViewPdf.setTextSize(12);
+            btnViewPdf.setOnClickListener(v -> openAttachedMaterial(note));
+            attachCard.addView(btnViewPdf);
+
+            LinearLayout.LayoutParams attachCardParams = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            attachCardParams.topMargin = dp(14);
+            attachCardParams.bottomMargin = dp(12);
+            layout.addView(attachCard, attachCardParams);
+        }
+
+        // 4. ✨ Gemini AI Concise Revision Summary Card
+        LinearLayout aiSummaryCard = new LinearLayout(this);
+        aiSummaryCard.setOrientation(LinearLayout.VERTICAL);
+        aiSummaryCard.setBackgroundResource(R.drawable.bg_badge_primary_light);
+        aiSummaryCard.setPadding(dp(16), dp(14), dp(16), dp(14));
+
+        TextView tvSummaryHeader = new TextView(this);
+        tvSummaryHeader.setText("✨ AI Revision Summary (Gemini)");
+        tvSummaryHeader.setTextSize(14);
+        tvSummaryHeader.setTextColor(getColor(R.color.primary));
+        tvSummaryHeader.setTypeface(null, android.graphics.Typeface.BOLD);
+        aiSummaryCard.addView(tvSummaryHeader);
+
+        TextView tvSummaryContent = new TextView(this);
+        tvSummaryContent.setTextSize(13);
+        tvSummaryContent.setTextColor(getColor(R.color.text_primary));
+        tvSummaryContent.setLineSpacing(dp(3), 1.15f);
+        LinearLayout.LayoutParams contentParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        contentParams.topMargin = dp(8);
+        aiSummaryCard.addView(tvSummaryContent, contentParams);
+
+        MaterialButton btnGenerateSummary = new MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
+        btnGenerateSummary.setText("✨ Generate AI Concise Summary");
+        btnGenerateSummary.setTextSize(12);
+        btnGenerateSummary.setVisibility(View.GONE);
+        btnGenerateSummary.setOnClickListener(v -> {
+            btnGenerateSummary.setEnabled(false);
+            tvSummaryContent.setText("Generating concise revision summary with Gemini...");
+            requestNoteSummary(note, tvSummaryContent, btnGenerateSummary);
+        });
+        LinearLayout.LayoutParams btnGenParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        btnGenParams.topMargin = dp(8);
+        aiSummaryCard.addView(btnGenerateSummary, btnGenParams);
+
+        if (note.getAiSummary() != null && !note.getAiSummary().trim().isEmpty()) {
+            tvSummaryContent.setText(note.getAiSummary().trim());
+        } else {
+            tvSummaryContent.setText("Generating concise revision summary with Gemini...");
+            requestNoteSummary(note, tvSummaryContent, btnGenerateSummary);
+        }
+
+        LinearLayout.LayoutParams summaryCardParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        summaryCardParams.topMargin = dp(10);
+        summaryCardParams.bottomMargin = dp(14);
+        layout.addView(aiSummaryCard, summaryCardParams);
+
+        // 5. Preview of note content / extracted text
+        if (note.getContent() != null && !note.getContent().trim().isEmpty()) {
+            TextView tvContentHeader = new TextView(this);
+            tvContentHeader.setText("Notes / Material Excerpt");
+            tvContentHeader.setTextSize(12);
+            tvContentHeader.setTextColor(getColor(R.color.text_secondary));
+            tvContentHeader.setTypeface(null, android.graphics.Typeface.BOLD);
+            layout.addView(tvContentHeader);
+
+            TextView tvContent = new TextView(this);
+            tvContent.setText(note.getContent().trim());
+            tvContent.setTextSize(13);
+            tvContent.setTextColor(getColor(R.color.text_primary));
+            tvContent.setMaxLines(7);
+            tvContent.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            LinearLayout.LayoutParams previewParams = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            previewParams.topMargin = dp(4);
+            previewParams.bottomMargin = dp(12);
+            layout.addView(tvContent, previewParams);
+        }
+
+        android.widget.ScrollView scrollView = new android.widget.ScrollView(this);
+        scrollView.addView(layout);
+
+        new MaterialAlertDialogBuilder(this)
+                .setView(scrollView)
+                .setPositiveButton("💬 Ask AI Tutor", (d, which) -> {
+                    Intent intent = new Intent(NotesActivity.this, AssistantActivity.class);
+                    intent.putExtra(AssistantActivity.EXTRA_CONTEXT, note.getContent());
+                    intent.putExtra(AssistantActivity.EXTRA_SUBJECT, note.getSubject());
+                    intent.putExtra(AssistantActivity.EXTRA_NOTE_TITLE, note.getTitle());
+                    intent.putExtra(AssistantActivity.EXTRA_NOTE_ID, note.getId());
+                    startActivity(intent);
+                })
+                .setNeutralButton("⚡ Adaptive Quiz", (d, which) -> {
+                    Intent intent = new Intent(NotesActivity.this, QuizActivity.class);
+                    intent.putExtra(QuizActivity.EXTRA_SUBJECT, note.getSubject());
+                    intent.putExtra(QuizActivity.EXTRA_MATERIAL, note.getContent());
+                    intent.putExtra(QuizActivity.EXTRA_NOTE_TITLE, note.getTitle());
+                    intent.putExtra(QuizActivity.EXTRA_NOTE_ID, note.getId());
+                    startActivity(intent);
+                })
+                .setNegativeButton("✏️ Edit Note", (d, which) -> showAddNoteDialog(note))
+                .show();
+    }
+
+    private void openAttachedMaterial(Note note) {
+        if (note == null || note.getFileUrl() == null) {
+            Toast.makeText(this, "No material file attached", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String fileUrl = note.getFileUrl();
+        try {
+            if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(fileUrl));
+                startActivity(browserIntent);
+            } else {
+                File file = new File(fileUrl);
+                if (file.exists()) {
+                    Uri contentUri = androidx.core.content.FileProvider.getUriForFile(
+                            this,
+                            getPackageName() + ".provider",
+                            file
+                    );
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(contentUri, "application/pdf");
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(Intent.createChooser(intent, "Open " + note.getFileName()));
+                } else {
+                    Toast.makeText(this, "File: " + note.getFileName(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Opening material: " + note.getFileName(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void requestNoteSummary(Note note, TextView tvSummary, View btnGenerate) {
+        executor.execute(() -> {
+            try {
+                URL url = new URL("http://10.0.2.2:3000/api/summarize");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(60000);
+                conn.setDoOutput(true);
+
+                JSONObject body = new JSONObject();
+                body.put("text", note.getContent());
+                body.put("subject", note.getSubject());
+                body.put("title", note.getTitle());
+                if (note.getFileUrl() != null) {
+                    body.put("fileUrl", note.getFileUrl());
+                }
+
+                byte[] bytes = body.toString().getBytes(StandardCharsets.UTF_8);
+                try (OutputStream os = conn.getOutputStream()) {
+                    os.write(bytes);
+                    os.flush();
+                }
+
+                if (conn.getResponseCode() == 200) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
+                    br.close();
+
+                    JSONObject res = new JSONObject(sb.toString());
+                    String summary = res.optString("aiSummary", "").trim();
+                    String extracted = res.optString("extractedText", "").trim();
+
+                    if (!summary.isEmpty()) {
+                        note.setAiSummary(summary);
+                        if ((note.getContent() == null || note.getContent().trim().isEmpty()) && !extracted.isEmpty()) {
+                            note.setContent(extracted);
+                        }
+
+                        if (mAuth.getCurrentUser() != null && note.getId() != null) {
+                            String userId = mAuth.getCurrentUser().getUid();
+                            java.util.Map<String, Object> updates = new java.util.HashMap<>();
+                            updates.put("aiSummary", summary);
+                            if (note.getContent() != null && !note.getContent().isEmpty()) {
+                                updates.put("content", note.getContent());
+                            }
+                            db.collection("users").document(userId).collection("notes")
+                                    .document(note.getId())
+                                    .update(updates);
+                        }
+
+                        runOnUiThread(() -> {
+                            tvSummary.setText(summary);
+                            if (btnGenerate != null) btnGenerate.setVisibility(View.GONE);
+                        });
+                        return;
+                    }
+                }
+            } catch (Exception e) {
+                Log.e("NotesActivity", "Summary request error: " + e.getMessage());
+            }
+
+            runOnUiThread(() -> {
+                if (btnGenerate != null) {
+                    btnGenerate.setVisibility(View.VISIBLE);
+                    btnGenerate.setEnabled(true);
+                }
+                tvSummary.setText("Tap below to generate a concise revision summary with Gemini.");
+            });
+        });
+    }
+
     private void showAddNoteDialog(Note noteToEdit) {
         pendingUploadUri = null;
         pendingUploadName = null;
@@ -291,15 +601,6 @@ public class NotesActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", (d, which) -> d.dismiss())
                 .setPositiveButton("Save note", null);
 
-        if (noteToEdit != null) {
-            builder.setNeutralButton("Adaptive Quiz", (d, which) -> {
-                Intent intent = new Intent(NotesActivity.this, QuizActivity.class);
-                intent.putExtra(QuizActivity.EXTRA_SUBJECT, noteToEdit.getSubject());
-                intent.putExtra(QuizActivity.EXTRA_MATERIAL, noteToEdit.getContent());
-                startActivity(intent);
-            });
-        }
-
         androidx.appcompat.app.AlertDialog dialog = builder.create();
 
         dialog.setOnShowListener(d -> {
@@ -327,37 +628,18 @@ public class NotesActivity extends AppCompatActivity {
                 if (mAuth.getCurrentUser() == null) return;
                 String userId = mAuth.getCurrentUser().getUid();
 
-                dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-                Toast.makeText(this, "Saving note...", Toast.LENGTH_SHORT).show();
+                // Alert box immediately closes upon saving!
+                dialog.dismiss();
+
+                Toast.makeText(this, pendingUploadUri != null ? "Saving note & ingesting material with Gemini..." : "Saving note...", Toast.LENGTH_SHORT).show();
 
                 if (pendingUploadUri != null) {
-                    // Upload to Firebase Cloud Storage (Free Spark Tier)
-                    String fileName = System.currentTimeMillis() + "_" + pendingUploadName;
-                    StorageReference fileRef = storage.getReference()
-                            .child("users")
-                            .child(userId)
-                            .child("notes")
-                            .child(fileName);
-
-                    fileRef.putFile(pendingUploadUri)
-                            .continueWithTask(task -> {
-                                if (!task.isSuccessful() && task.getException() != null) {
-                                    throw task.getException();
-                                }
-                                return fileRef.getDownloadUrl();
-                            })
-                            .addOnSuccessListener(downloadUrl -> {
-                                saveNoteToFirestore(userId, noteToEdit, title, subject, content, 
-                                        downloadUrl.toString(), pendingUploadName, dialog);
-                            })
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(this, "File upload failed, saving note text only", Toast.LENGTH_SHORT).show();
-                                saveNoteToFirestore(userId, noteToEdit, title, subject, content, null, null, dialog);
-                            });
+                    uploadMaterialFile(userId, noteToEdit, title, subject, content, pendingUploadUri, pendingUploadName);
                 } else {
                     String existingUrl = noteToEdit != null ? noteToEdit.getFileUrl() : null;
                     String existingName = noteToEdit != null ? noteToEdit.getFileName() : null;
-                    saveNoteToFirestore(userId, noteToEdit, title, subject, content, existingUrl, existingName, dialog);
+                    String existingSummary = noteToEdit != null ? noteToEdit.getAiSummary() : null;
+                    saveNoteToFirestore(userId, noteToEdit, title, subject, content, existingUrl, existingName, existingSummary);
                 }
             });
         });
@@ -365,9 +647,101 @@ public class NotesActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    private void uploadMaterialFile(String userId, Note noteToEdit, String title, String subject,
+                                    String content, Uri fileUri, String fileName) {
+        executor.execute(() -> {
+            try {
+                String boundary = "===" + System.currentTimeMillis() + "===";
+                URL url = new URL(UPLOAD_API_URL);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setDoOutput(true);
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+                conn.setConnectTimeout(15000);
+                conn.setReadTimeout(60000);
+
+                OutputStream os = conn.getOutputStream();
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
+
+                writer.append("--" + boundary).append("\r\n");
+                writer.append("Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"").append("\r\n");
+                writer.append("Content-Type: application/octet-stream").append("\r\n");
+                writer.append("\r\n").flush();
+
+                InputStream is = getContentResolver().openInputStream(fileUri);
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    os.write(buffer, 0, bytesRead);
+                }
+                os.flush();
+                is.close();
+
+                writer.append("\r\n").flush();
+                writer.append("--" + boundary + "--").append("\r\n").flush();
+                writer.close();
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode == 200) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
+                    br.close();
+
+                    JSONObject resJson = new JSONObject(sb.toString());
+                    String fileUrl = resJson.optString("fileUrl");
+                    String extractedText = resJson.optString("extractedText", "");
+                    String aiSummary = resJson.optString("aiSummary", "");
+
+                    String finalContent = content;
+                    if ((finalContent == null || finalContent.trim().isEmpty()) && !extractedText.isEmpty()) {
+                        finalContent = extractedText;
+                    }
+
+                    final String noteContentToSave = finalContent;
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Material uploaded & ingested with Gemini!", Toast.LENGTH_SHORT).show();
+                        saveNoteToFirestore(userId, noteToEdit, title, subject, noteContentToSave, fileUrl, fileName, aiSummary);
+                    });
+                    return;
+                }
+            } catch (Exception e) {
+                Log.e("NotesActivity", "Upload to StudySphere backend failed: " + e.getMessage());
+            }
+
+            // Fallback: Copy to app's internal private storage so the file is stored locally on device for free
+            try {
+                File internalDir = new File(getFilesDir(), "materials");
+                if (!internalDir.exists()) internalDir.mkdirs();
+                File destFile = new File(internalDir, System.currentTimeMillis() + "_" + fileName);
+
+                InputStream in = getContentResolver().openInputStream(fileUri);
+                FileOutputStream out = new FileOutputStream(destFile);
+                byte[] buf = new byte[4096];
+                int len;
+                while ((len = in.read(buf)) != -1) {
+                    out.write(buf, 0, len);
+                }
+                in.close();
+                out.close();
+
+                String localPath = destFile.getAbsolutePath();
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Saved file to local storage", Toast.LENGTH_SHORT).show();
+                    saveNoteToFirestore(userId, noteToEdit, title, subject, content, localPath, fileName, null);
+                });
+            } catch (Exception fallbackEx) {
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "File upload failed, saving note text only", Toast.LENGTH_SHORT).show();
+                    saveNoteToFirestore(userId, noteToEdit, title, subject, content, null, null, null);
+                });
+            }
+        });
+    }
+
     private void saveNoteToFirestore(String userId, Note noteToEdit, String title, String subject, 
-                                    String content, String fileUrl, String fileName, 
-                                    androidx.appcompat.app.AlertDialog dialog) {
+                                    String content, String fileUrl, String fileName, String aiSummary) {
         com.google.firebase.firestore.CollectionReference notesRef = 
                 db.collection("users").document(userId).collection("notes");
 
@@ -379,15 +753,21 @@ public class NotesActivity extends AppCompatActivity {
         if (fileUrl != null) note.setFileUrl(fileUrl);
         if (fileName != null) note.setFileName(fileName);
 
+        String summaryToSave = aiSummary;
+        if ((summaryToSave == null || summaryToSave.trim().isEmpty()) && noteToEdit != null) {
+            summaryToSave = noteToEdit.getAiSummary();
+        }
+        if (summaryToSave != null && !summaryToSave.trim().isEmpty()) {
+            note.setAiSummary(summaryToSave.trim());
+        }
+
         String noteId = noteToEdit != null ? noteToEdit.getId() : notesRef.document().getId();
 
         notesRef.document(noteId).set(note).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Toast.makeText(this, "Note saved successfully!", Toast.LENGTH_SHORT).show();
-                dialog.dismiss();
             } else {
                 Toast.makeText(this, "Unable to save note. Please try again.", Toast.LENGTH_LONG).show();
-                dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setEnabled(true);
             }
         });
     }

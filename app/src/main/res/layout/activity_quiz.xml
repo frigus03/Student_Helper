@@ -6,29 +6,31 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:fitsSystemWindows="true"
     android:background="@color/background">
 
     <!-- Top bar -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="20dp"
         android:orientation="horizontal"
-        android:background="@color/surface">
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnBack"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:minWidth="0dp"
-            android:minHeight="0dp"
             android:text="‹"
             android:textSize="30sp"
-            android:textColor="@color/primary"
+            android:textColor="@color/text_primary"
+            android:textAllCaps="false"
             android:contentDescription="Go back"
-            app:backgroundTint="@color/primary_light"
+            app:backgroundTint="@color/surface"
             app:cornerRadius="14dp"
             app:elevation="0dp"/>
 
@@ -40,18 +42,19 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/tvQuizTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PRACTICE QUIZ"
+                android:text="Adaptive Quiz"
                 android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.04"/>
+                android:textSize="20sp"
+                android:textStyle="bold"/>
 
             <TextView
+                android:id="@+id/tvQuizSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Learn something new today"
+                android:text="Targeted practice from your notes"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp"/>
 
@@ -71,7 +74,120 @@
             android:layout_height="wrap_content"
             android:padding="20dp">
 
-            <!-- Quiz content -->
+            <!-- 1. NOTE SELECTION CONTAINER (when no note is pre-selected) -->
+            <LinearLayout
+                android:id="@+id/selectNoteContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="@color/primary_light"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="18dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📚 Pick a Study Note"
+                            android:textColor="@color/primary"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="Adaptive quizzes are generated strictly from your uploaded notes and materials. Choose a topic below to start:"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:lineSpacingExtra="3dp" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:text="YOUR UPLOADED NOTES"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08" />
+
+                <!-- RecyclerView for picking a note -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvNotesSelection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false" />
+
+                <!-- Empty state if no notes -->
+                <LinearLayout
+                    android:id="@+id/layoutNoNotes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingTop="36dp"
+                    android:paddingBottom="36dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📝"
+                        android:textSize="44sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="No study notes found"
+                        android:textColor="@color/text_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center"
+                        android:text="Upload or write your notes first to generate adaptive quizzes!"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnGoToNotes"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="18dp"
+                        android:text="Go to My Notes"
+                        android:textAllCaps="false"
+                        android:textStyle="bold"
+                        android:textColor="@color/white"
+                        app:backgroundTint="@color/primary"
+                        app:cornerRadius="12dp"
+                        app:elevation="0dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- 2. QUIZ QUESTIONS CONTAINER -->
             <LinearLayout
                 android:id="@+id/quizContainer"
                 android:layout_width="match_parent"
@@ -82,7 +198,7 @@
                     android:id="@+id/tvQuestionNumber"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="QUESTION 01 OF 10"
+                    tools:text="QUESTION 01 OF 05"
                     android:textColor="@color/primary"
                     android:textSize="12sp"
                     android:textStyle="bold"
@@ -94,15 +210,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="8dp"
                     android:layout_marginTop="12dp"
-                    android:max="10"
+                    android:max="5"
                     android:progress="1"
                     android:progressTint="@color/primary"
                     android:progressBackgroundTint="@color/primary_light"/>
 
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardQuestion"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="20dp"
                     app:cardBackgroundColor="@color/surface"
                     app:cardCornerRadius="24dp"
                     app:cardElevation="0dp"
@@ -113,7 +230,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="22dp">
+                        android:padding="20dp">
 
                         <TextView
                             android:id="@+id/tvQuestionCategory"
@@ -124,7 +241,7 @@
                             android:paddingEnd="12dp"
                             android:paddingTop="6dp"
                             android:paddingBottom="6dp"
-                            tools:text="NLP"
+                            tools:text="Physics • Newton's Laws"
                             android:textColor="@color/primary"
                             android:textSize="12sp"
                             android:textStyle="bold"/>
@@ -133,11 +250,12 @@
                             android:id="@+id/tvQuestion"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="20dp"
+                            android:layout_marginTop="18dp"
                             tools:text="Your question will appear here."
                             android:textColor="@color/text_primary"
-                            android:textSize="21sp"
+                            android:textSize="19sp"
                             android:textStyle="bold"
+                            android:textIsSelectable="true"
                             android:lineSpacingExtra="4dp"/>
 
                     </LinearLayout>
@@ -145,9 +263,9 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="26dp"
+                    android:layout_marginTop="22dp"
                     android:layout_marginBottom="12dp"
                     android:text="CHOOSE YOUR ANSWER"
                     android:textColor="@color/text_secondary"
@@ -160,10 +278,10 @@
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="58dp"
+                    android:minHeight="56dp"
                     android:gravity="start|center_vertical"
-                    android:paddingStart="18dp"
-                    android:paddingEnd="18dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
                     android:layout_marginBottom="10dp"
                     tools:text="A. Option one"
                     android:textColor="#28243D"
@@ -178,10 +296,10 @@
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="58dp"
+                    android:minHeight="56dp"
                     android:gravity="start|center_vertical"
-                    android:paddingStart="18dp"
-                    android:paddingEnd="18dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
                     android:layout_marginBottom="10dp"
                     tools:text="B. Option two"
                     android:textColor="#28243D"
@@ -196,10 +314,10 @@
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="58dp"
+                    android:minHeight="56dp"
                     android:gravity="start|center_vertical"
-                    android:paddingStart="18dp"
-                    android:paddingEnd="18dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
                     android:layout_marginBottom="10dp"
                     tools:text="C. Option three"
                     android:textColor="#28243D"
@@ -214,10 +332,10 @@
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="58dp"
+                    android:minHeight="56dp"
                     android:gravity="start|center_vertical"
-                    android:paddingStart="18dp"
-                    android:paddingEnd="18dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
                     android:layout_marginBottom="10dp"
                     tools:text="D. Option four"
                     android:textColor="#28243D"
@@ -231,10 +349,8 @@
                     android:id="@+id/tvExplanation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="12dp"
                     android:padding="16dp"
-                    android:background="@color/success_light"
-                    android:textColor="#176B3A"
                     android:textSize="14sp"
                     android:lineSpacingExtra="3dp"
                     android:visibility="gone"/>
@@ -243,7 +359,7 @@
                     android:id="@+id/btnNextQuestion"
                     android:layout_width="match_parent"
                     android:layout_height="54dp"
-                    android:layout_marginTop="20dp"
+                    android:layout_marginTop="18dp"
                     android:text="Next Question"
                     android:textAllCaps="false"
                     android:textStyle="bold"
@@ -255,7 +371,7 @@
 
             </LinearLayout>
 
-            <!-- Results content -->
+            <!-- 3. RESULTS CONTAINER WITH ADAPTIVE ANALYSIS & YOUTUBE RECOMMENDATIONS -->
             <LinearLayout
                 android:id="@+id/resultsContainer"
                 android:layout_width="match_parent"
@@ -265,10 +381,10 @@
                 android:visibility="gone">
 
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="104dp"
-                    android:layout_height="104dp"
+                    android:layout_width="92dp"
+                    android:layout_height="92dp"
                     app:cardBackgroundColor="@color/primary_light"
-                    app:cardCornerRadius="32dp"
+                    app:cardCornerRadius="28dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp">
 
@@ -277,7 +393,7 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:text="🏆"
-                        android:textSize="48sp"/>
+                        android:textSize="44sp"/>
 
                 </com.google.android.material.card.MaterialCardView>
 
@@ -285,28 +401,29 @@
                     android:id="@+id/tvResultTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="20dp"
                     android:gravity="center"
                     tools:text="Excellent work!"
                     android:textColor="@color/text_primary"
-                    android:textSize="26sp"
+                    android:textSize="24sp"
                     android:textStyle="bold"/>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="6dp"
                     android:gravity="center"
-                    android:text="Here is how you performed"
+                    android:text="Here is your learning diagnostic"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"/>
 
+                <!-- Score card -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="28dp"
+                    android:layout_marginTop="22dp"
                     app:cardBackgroundColor="@color/surface"
-                    app:cardCornerRadius="24dp"
+                    app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:strokeColor="@color/border"
                     app:strokeWidth="1dp">
@@ -314,7 +431,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="24dp"
+                        android:padding="20dp"
                         android:gravity="center"
                         android:orientation="vertical">
 
@@ -322,27 +439,27 @@
                             android:id="@+id/tvResultScore"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            tools:text="8 / 10"
+                            tools:text="4 / 5"
                             android:textColor="@color/primary"
-                            android:textSize="42sp"
+                            android:textSize="38sp"
                             android:textStyle="bold"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
+                            android:layout_marginTop="4dp"
                             android:text="Correct answers"
                             android:textColor="@color/text_secondary"
-                            android:textSize="14sp"/>
+                            android:textSize="13sp"/>
 
                         <TextView
                             android:id="@+id/tvResultAccuracy"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="18dp"
+                            android:layout_marginTop="12dp"
                             tools:text="80% accuracy"
                             android:textColor="@color/text_primary"
-                            android:textSize="18sp"
+                            android:textSize="17sp"
                             android:textStyle="bold"/>
 
                     </LinearLayout>
@@ -353,23 +470,152 @@
                     android:id="@+id/tvResultMessage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="18dp"
                     android:gravity="center"
                     tools:text="Keep practising!"
                     android:textColor="@color/text_secondary"
-                    android:textSize="15sp"
-                    android:lineSpacingExtra="4dp"/>
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="3dp"/>
+
+                <!-- ADAPTIVE WEAK CONCEPTS & YOUTUBE RECOMMENDATIONS SECTION -->
+                <LinearLayout
+                    android:id="@+id/layoutWeakAreas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="@color/surface"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/border"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="18dp">
+
+                            <!-- Section Header -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="🎯"
+                                    android:textSize="22sp" />
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="10dp"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Adaptive Learning Insights"
+                                        android:textColor="@color/text_primary"
+                                        android:textSize="16sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:id="@+id/tvWeakAreasSubtitle"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="2dp"
+                                        android:text="Concepts identified for revision"
+                                        android:textColor="@color/text_secondary"
+                                        android:textSize="12sp" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <!-- Weak concept pills container -->
+                            <LinearLayout
+                                android:id="@+id/containerWeakConcepts"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="14dp"
+                                android:orientation="vertical" />
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="@color/border"
+                                android:layout_marginTop="16dp"
+                                android:layout_marginBottom="14dp" />
+
+                            <!-- Video Recommendation Header -->
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="🎬 RECOMMENDED VIDEO LESSONS"
+                                android:textColor="@color/primary"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.08" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:layout_marginBottom="12dp"
+                                android:text="Hey! These videos might solve the concepts you are weak in:"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="13sp" />
+
+                            <!-- YouTube video cards container -->
+                            <LinearLayout
+                                android:id="@+id/containerYouTubeVideos"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical" />
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+                <!-- Action Buttons -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPracticeWeakSpots"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:layout_marginTop="22dp"
+                    android:text="🎯 Practice Weak Points Again"
+                    android:textAllCaps="false"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:visibility="gone"
+                    app:backgroundTint="@color/primary"
+                    app:cornerRadius="16dp"
+                    app:elevation="0dp"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRetryQuiz"
                     android:layout_width="match_parent"
                     android:layout_height="54dp"
-                    android:layout_marginTop="28dp"
-                    android:text="Try Again"
+                    android:layout_marginTop="10dp"
+                    android:text="Try Full Quiz Again"
                     android:textAllCaps="false"
                     android:textStyle="bold"
-                    android:textColor="@color/white"
-                    app:backgroundTint="@color/primary"
+                    android:textColor="@color/text_primary"
+                    app:backgroundTint="@color/surface"
+                    app:strokeColor="@color/border"
+                    app:strokeWidth="1dp"
                     app:cornerRadius="16dp"
                     app:elevation="0dp"/>
 
@@ -377,7 +623,7 @@
                     android:id="@+id/btnExitQuiz"
                     android:layout_width="match_parent"
                     android:layout_height="54dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="10dp"
                     android:text="Back to Dashboard"
                     android:textAllCaps="false"
                     android:textStyle="bold"
@@ -385,6 +631,68 @@
                     app:backgroundTint="@color/primary_light"
                     app:cornerRadius="16dp"
                     app:elevation="0dp"/>
+
+            </LinearLayout>
+
+            <!-- 4. QUIZ LOADING / ADAPTIVE GENERATION SPINNER OVERLAY -->
+            <LinearLayout
+                android:id="@+id/layoutQuizLoading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:visibility="gone">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="@color/surface"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/border"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="32dp">
+
+                        <ProgressBar
+                            android:id="@+id/pbQuizLoading"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:indeterminate="true"
+                            android:indeterminateTint="@color/primary" />
+
+                        <TextView
+                            android:id="@+id/tvQuizLoadingTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:text="Crafting Adaptive Quiz..."
+                            android:textColor="@color/text_primary"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:gravity="center" />
+
+                        <TextView
+                            android:id="@+id/tvQuizLoadingSubtitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Analyzing weak points and extracting questions tailored to your notes."
+                            android:textColor="@color/text_secondary"
+                            android:textSize="13sp"
+                            android:gravity="center"
+                            android:lineSpacingExtra="3dp" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
 
