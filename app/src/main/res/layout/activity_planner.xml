@@ -2,6 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -51,6 +52,19 @@
                 android:textSize="13sp"/>
 
         </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAiPlan"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:text="✨ AI Plan"
+            android:textAllCaps="false"
+            android:textStyle="bold"
+            app:cornerRadius="14dp"
+            app:strokeColor="@color/primary"
+            android:textColor="@color/primary"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAddTask"
@@ -107,7 +121,7 @@
                         android:id="@+id/tvPlannerCompleted"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0"
+                        tools:text="0"
                         android:textColor="@color/white"
                         android:textSize="30sp"
                         android:textStyle="bold"/>
@@ -137,7 +151,7 @@
                         android:id="@+id/tvPlannerPending"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0"
+                        tools:text="0"
                         android:textColor="@color/white"
                         android:textSize="30sp"
                         android:textStyle="bold"/>
@@ -167,7 +181,7 @@
                         android:id="@+id/tvPlannerPercent"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0%"
+                        tools:text="0%"
                         android:textColor="@color/white"
                         android:textSize="25sp"
                         android:textStyle="bold"/>
@@ -280,7 +294,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="10dp"
-        android:text="YOUR TASKS"
+        tools:text="YOUR TASKS"
         android:textColor="@color/text_secondary"
         android:textSize="11sp"
         android:textStyle="bold"
@@ -328,7 +342,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="center"
-                android:text="Add your first study task to get organized."
+                tools:text="Add your first study task to get organized."
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp"/>
 

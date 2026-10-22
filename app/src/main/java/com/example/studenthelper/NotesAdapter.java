@@ -55,7 +55,12 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
 
         holder.tvTitle.setText(note.getTitle());
         holder.tvSubject.setText(note.getSubject());
-        holder.tvPreview.setText(note.getContent());
+
+        String preview = note.getContent();
+        if (note.getFileName() != null && !note.getFileName().isEmpty()) {
+            preview = "📎 " + note.getFileName() + (preview != null && !preview.isEmpty() ? "\n" + preview : "");
+        }
+        holder.tvPreview.setText(preview);
 
         String date = new SimpleDateFormat(
                 "dd MMM",
@@ -80,19 +85,19 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
 
     static class NoteViewHolder extends RecyclerView.ViewHolder {
 
-        TextView tvTitle;
         TextView tvSubject;
-        TextView tvPreview;
         TextView tvDate;
+        TextView tvTitle;
+        TextView tvPreview;
         ImageButton btnDelete;
 
         NoteViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            tvTitle = itemView.findViewById(R.id.tvNoteTitle);
             tvSubject = itemView.findViewById(R.id.tvNoteSubject);
-            tvPreview = itemView.findViewById(R.id.tvNotePreview);
             tvDate = itemView.findViewById(R.id.tvNoteDate);
+            tvTitle = itemView.findViewById(R.id.tvNoteTitle);
+            tvPreview = itemView.findViewById(R.id.tvNotePreview);
             btnDelete = itemView.findViewById(R.id.btnDeleteNote);
         }
     }

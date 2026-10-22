@@ -1,4 +1,3 @@
-
 package com.example.studenthelper;
 
 import android.content.Context;
@@ -31,16 +30,15 @@ import java.util.concurrent.Executors;
 
 public class AssistantActivity extends AppCompatActivity {
 
-    private static final String CHAT_API_URL =
-            "http://10.0.2.2:3000/api/chat";
+    private static final String CHAT_API_URL = "http://10.0.2.2:3000/api/chat";
 
     private TextInputEditText etMessage;
     private LinearLayout messagesContainer;
     private ScrollView scrollMessages;
     private MaterialButton btnSend;
 
-    private final ExecutorService executor =
-            Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private boolean isWaitingForResponse = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +57,8 @@ public class AssistantActivity extends AppCompatActivity {
     }
 
     private void sendMessage() {
+        if (isWaitingForResponse) return;
+        
         if (etMessage.getText() == null) {
             return;
         }
@@ -66,33 +66,29 @@ public class AssistantActivity extends AppCompatActivity {
         String message = etMessage.getText().toString().trim();
 
         if (message.isEmpty()) {
-            Toast.makeText(this, "Please enter a question.",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please enter a question.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         addMessage(message, true);
         etMessage.setText("");
 
-        InputMethodManager imm = (InputMethodManager)
-                getSystemService(Context.INPUT_METHOD_SERVICE);
-
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null) {
             imm.hideSoftInputFromWindow(etMessage.getWindowToken(), 0);
         }
 
         btnSend.setEnabled(false);
+        isWaitingForResponse = true;
 
         TextView replyView = addMessage("Thinking...", false);
 
         executor.execute(() -> {
             String result;
-
             try {
                 result = requestAiAnswer(message);
             } catch (Exception e) {
-                result = "Sorry, I couldn't get an AI answer.\n\n"
-                        + e.getMessage();
+                result = "Sorry, I couldn't get an AI answer.\n\n" + e.getMessage();
             }
 
             final String finalResult = result;
@@ -104,6 +100,7 @@ public class AssistantActivity extends AppCompatActivity {
 
                 replyView.setText(finalResult);
                 btnSend.setEnabled(true);
+                isWaitingForResponse = false;
                 scrollToBottom();
             });
         });
@@ -120,16 +117,12 @@ public class AssistantActivity extends AppCompatActivity {
             connection.setConnectTimeout(10000);
             connection.setReadTimeout(70000);
             connection.setDoOutput(true);
-
-            connection.setRequestProperty(
-                    "Content-Type", "application/json; charset=UTF-8");
+            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
 
             JSONObject requestBody = new JSONObject();
             requestBody.put("message", message);
 
-            byte[] requestBytes = requestBody.toString().getBytes(
-                    StandardCharsets.UTF_8);
-
+            byte[] requestBytes = requestBody.toString().getBytes(StandardCharsets.UTF_8);
             connection.setFixedLengthStreamingMode(requestBytes.length);
 
             try (OutputStream output = connection.getOutputStream()) {
@@ -138,52 +131,39 @@ public class AssistantActivity extends AppCompatActivity {
             }
 
             int statusCode = connection.getResponseCode();
-
-            InputStream inputStream =
-                    statusCode >= 200 && statusCode < 300
+            InputStream inputStream = statusCode >= 200 && statusCode < 300
                             ? connection.getInputStream()
                             : connection.getErrorStream();
 
             String responseText = "";
-
             if (inputStream != null) {
                 try (InputStream stream = inputStream;
-                     ByteArrayOutputStream buffer =
-                             new ByteArrayOutputStream()) {
-
+                     ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
                     byte[] data = new byte[4096];
                     int count;
-
                     while ((count = stream.read(data)) != -1) {
                         buffer.write(data, 0, count);
                     }
-
                     responseText = buffer.toString("UTF-8");
                 }
             }
 
             JSONObject responseJson;
-
             try {
                 responseJson = new JSONObject(responseText);
             } catch (Exception e) {
-                throw new IOException(
-                        "Invalid backend response. HTTP " + statusCode);
+                throw new IOException("Invalid backend response. HTTP " + statusCode);
             }
 
             if (statusCode < 200 || statusCode >= 300) {
-                throw new IOException(responseJson.optString(
-                        "error", "Request failed: HTTP " + statusCode));
+                throw new IOException(responseJson.optString("error", "Request failed: HTTP " + statusCode));
             }
 
             String answer = responseJson.optString("answer", "").trim();
-
             if (answer.isEmpty()) {
                 throw new IOException("The AI returned an empty answer.");
             }
-
             return answer;
-
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -195,35 +175,34 @@ public class AssistantActivity extends AppCompatActivity {
         TextView messageView = new TextView(this);
 
         messageView.setText(message);
-        messageView.setTextSize(14);
-        messageView.setTextColor(
-                isUser ? Color.WHITE : Color.BLACK);
-        messageView.setPadding(16, 12, 16, 12);
+        messageView.setTextSize(16);
+        messageView.setTextColor(isUser ? Color.WHITE : getResources().getColor(R.color.text_primary));
+        
+        int paddingH = dp(16);
+        int paddingV = dp(12);
+        messageView.setPadding(paddingH, paddingV, paddingH, paddingV);
+        messageView.setBackgroundResource(isUser ? R.drawable.bg_bubble_user : R.drawable.bg_bubble_ai);
 
-        messageView.setBackgroundColor(
-                isUser
-                        ? Color.rgb(103, 80, 164)
-                        : Color.rgb(245, 245, 250));
-
-        LinearLayout.LayoutParams params =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
 
         params.gravity = isUser ? Gravity.END : Gravity.START;
-        params.setMargins(0, 6, 0, 6);
+        params.setMargins(0, dp(4), 0, dp(4));
 
         messageView.setLayoutParams(params);
         messagesContainer.addView(messageView);
 
         scrollToBottom();
-
         return messageView;
     }
 
     private void scrollToBottom() {
-        scrollMessages.post(
-                () -> scrollMessages.fullScroll(View.FOCUS_DOWN));
+        scrollMessages.post(() -> scrollMessages.fullScroll(View.FOCUS_DOWN));
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     @Override

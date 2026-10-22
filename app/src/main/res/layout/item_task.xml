@@ -2,6 +2,7 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
@@ -37,7 +38,7 @@
                 android:id="@+id/tvTaskTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Revise Machine Learning"
+                tools:text="Revise Machine Learning"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp"
                 android:textStyle="bold"
@@ -49,7 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
-                android:text="Machine Learning"
+                tools:text="Machine Learning"
                 android:textColor="@color/primary"
                 android:textSize="12sp"/>
 
@@ -58,16 +59,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Due 20 Oct"
+                tools:text="Due 20 Oct"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp"/>
 
         </LinearLayout>
 
         <ImageButton
+            android:id="@+id/btnCalendarTask"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Sync to Google Calendar"
+            android:src="@drawable/ic_calendar"
+            app:tint="@color/primary"/>
+
+        <ImageButton
             android:id="@+id/btnDeleteTask"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_marginStart="4dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Delete task"
             android:src="@android:drawable/ic_menu_delete"

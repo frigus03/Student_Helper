@@ -2,6 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -51,7 +52,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Hey, Student! 👋"
+                        tools:text="Good morning, Alex 👋"
                         android:textColor="@color/text_primary"
                         android:textSize="25sp"
                         android:textStyle="bold" />
@@ -194,7 +195,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="7dp"
-                            android:text="0"
+                            tools:text="12"
                             android:textColor="@color/text_primary"
                             android:textSize="25sp"
                             android:textStyle="bold" />
@@ -239,7 +240,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="7dp"
-                            android:text="0 min"
+                            tools:text="45 min"
                             android:textColor="@color/text_primary"
                             android:textSize="25sp"
                             android:textStyle="bold" />
@@ -283,7 +284,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackground"
-                    app:cardBackgroundColor="@color/blue_light"
+                    app:cardBackgroundColor="@color/primary_light"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp">
 
@@ -362,7 +363,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackground"
-                    app:cardBackgroundColor="@color/pink_light"
+                    app:cardBackgroundColor="@color/warning_light"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp">
 
@@ -425,7 +426,7 @@
                         android:id="@+id/tvPlanTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Your next step starts here"
+                        tools:text="2 tasks remaining"
                         android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -435,7 +436,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:text="Add your first study task in the planner."
+                        tools:text="Keep going! Complete your next study task."
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
 

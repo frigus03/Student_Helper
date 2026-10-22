@@ -97,6 +97,10 @@ public class PlannerAdapter
                 }
         );
 
+        holder.btnCalendar.setOnClickListener(
+                v -> CalendarHelper.addStudyTaskToCalendar(v.getContext(), task)
+        );
+
         holder.btnDelete.setOnClickListener(
                 v -> listener.onDeleteTask(task)
         );
@@ -113,6 +117,7 @@ public class PlannerAdapter
         TextView tvSubject;
         TextView tvDueDate;
         MaterialCheckBox checkCompleted;
+        ImageButton btnCalendar;
         ImageButton btnDelete;
 
         TaskViewHolder(@NonNull View itemView) {
@@ -122,6 +127,7 @@ public class PlannerAdapter
             tvSubject = itemView.findViewById(R.id.tvTaskSubject);
             tvDueDate = itemView.findViewById(R.id.tvTaskDueDate);
             checkCompleted = itemView.findViewById(R.id.checkTaskCompleted);
+            btnCalendar = itemView.findViewById(R.id.btnCalendarTask);
             btnDelete = itemView.findViewById(R.id.btnDeleteTask);
         }
     }

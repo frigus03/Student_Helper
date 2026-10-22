@@ -1,21 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#6558F5</color>
-    <color name="primary_dark">#4940C7</color>
-    <color name="primary_light">#EEEAFE</color>
+    <!-- Brand Primary -->
+    <color name="primary">#5B4AE4</color>
+    <color name="primary_dark">#4535C7</color>
+    <color name="primary_light">#EEEDFC</color>
+    <color name="secondary">#8F84FB</color>
 
-    <color name="background">#F7F8FC</color>
+    <!-- Backgrounds & Surfaces -->
+    <color name="background">#F8F9FD</color>
     <color name="surface">#FFFFFF</color>
-    <color name="text_primary">#20233A</color>
-    <color name="text_secondary">#85899E</color>
+    <color name="surface_card">#FFFFFF</color>
 
-    <color name="success">#22A879</color>
-    <color name="success_light">#E3F7EF</color>
-    <color name="warning">#F2A93B</color>
-    <color name="warning_light">#FFF3DD</color>
+    <!-- Typography -->
+    <color name="text_primary">#1C1F37</color>
+    <color name="text_secondary">#5F6582</color>
+    <color name="text_tertiary">#9EA5C0</color>
+
+    <!-- Functional States -->
+    <color name="border">#DDE2EE</color>
+    <color name="border_focus">#5B4AE4</color>
+    <color name="success">#1B9360</color>
+    <color name="success_light">#E5F6EE</color>
+    <color name="warning">#D97706</color>
+    <color name="warning_light">#FEF3C7</color>
+    <color name="error">#D92D20</color>
+    <color name="error_light">#FEE4E2</color>
+
     <color name="blue_light">#E7F0FF</color>
     <color name="pink_light">#FCE9F2</color>
-    <color name="border">#E9EAF2</color>
+
+    <!-- Utility -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
 </resources>
