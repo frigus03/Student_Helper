@@ -20,6 +20,7 @@
         <!-- Component Styles -->
         <item name="textInputStyle">@style/Widget.Companion.TextInputLayout</item>
         <item name="materialButtonStyle">@style/Widget.Companion.Button.Primary</item>
+        <item name="bottomNavigationStyle">@style/Widget.Companion.BottomNavigationView</item>
     </style>
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
@@ -52,5 +53,20 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textAllCaps">false</item>
         <item name="elevation">0dp</item>
+    </style>
+
+    <!-- Modern Stitch Bottom Navigation Bar Style -->
+    <style name="Widget.Companion.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemActiveIndicatorStyle">@style/Widget.Companion.BottomNavIndicator</item>
+        <item name="itemIconTint">@color/nav_item_selector</item>
+        <item name="itemTextColor">@color/nav_item_selector</item>
+        <item name="android:background">@color/surface</item>
+        <item name="elevation">8dp</item>
+    </style>
+
+    <style name="Widget.Companion.BottomNavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/primary_light</item>
+        <item name="android:width">60dp</item>
+        <item name="android:height">32dp</item>
     </style>
 </resources>

@@ -25,7 +25,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Welcome Back 👋"
+        android:text="@string/login_welcome"
         android:textSize="28sp"
         android:textStyle="bold"
         android:textColor="@color/text_primary"

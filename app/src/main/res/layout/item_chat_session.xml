@@ -22,12 +22,13 @@
         android:paddingTop="10dp"
         android:paddingBottom="10dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="💬"
-            android:textSize="18sp"
-            android:layout_marginEnd="10dp" />
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_notes"
+            app:tint="@color/primary"
+            android:layout_marginEnd="10dp"
+            android:contentDescription="Chat" />
 
         <LinearLayout
             android:layout_width="0dp"

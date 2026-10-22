@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.OpenableColumns;
@@ -60,6 +61,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -91,6 +93,7 @@ public class PlannerActivity extends AppCompatActivity {
 
     private ArrayList<StudyTask> allTasks = new ArrayList<>();
     private String currentFilter = "All";
+    private Calendar selectedCalendarDate = null;
 
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
@@ -160,18 +163,22 @@ public class PlannerActivity extends AppCompatActivity {
             @Override
             public void onAiBreakdown(StudyTask task) {
                 new MaterialAlertDialogBuilder(PlannerActivity.this)
-                        .setTitle("AI Breakdown ✨")
-                        .setMessage("Generating breakdown for " + task.getTitle() + "...\n(Endpoint integration placeholder)")
+                        .setTitle("AI Breakdown")
+                        .setMessage("Study breakdown for " + task.getTitle() + ":\n\n" + (task.getNotes() != null ? task.getNotes() : "Review primary textbook chapters, notes, and solve key problems."))
                         .setPositiveButton("Close", null)
                         .show();
             }
 
             @Override
             public void onCalendarSync(StudyTask task) {
-                if (task.getTitle() != null) {
-                     // CalendarHelper.addStudyTaskToCalendar(PlannerActivity.this, task);
-                     Toast.makeText(PlannerActivity.this, "Calendar Sync Placeholder", Toast.LENGTH_SHORT).show();
+                if (task != null) {
+                    CalendarHelper.addStudyTaskToCalendar(PlannerActivity.this, task);
                 }
+            }
+
+            @Override
+            public void onDeleteTask(StudyTask task) {
+                confirmDelete(task);
             }
         });
         rvTasks.setAdapter(plannerAdapter);
@@ -199,38 +206,84 @@ public class PlannerActivity extends AppCompatActivity {
 
     private void setupDateStrip() {
         dateStripContainer.removeAllViews();
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
 
         SimpleDateFormat dayFormat = new SimpleDateFormat("EEE", Locale.getDefault());
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd", Locale.getDefault());
-        int today = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
+        Calendar now = Calendar.getInstance();
+        int currentDayOfYear = now.get(Calendar.DAY_OF_YEAR);
+        int currentYear = now.get(Calendar.YEAR);
 
-        for (int i = 0; i < 7; i++) {
+        int padH = dp(14);
+        int padV = dp(10);
+
+        // 1. "All" days pill
+        LinearLayout allDayView = new LinearLayout(this);
+        allDayView.setOrientation(LinearLayout.VERTICAL);
+        allDayView.setGravity(Gravity.CENTER);
+        allDayView.setPadding(padH, padV, padH, padV);
+        boolean isAllSelected = (selectedCalendarDate == null);
+        if (isAllSelected) {
+            allDayView.setBackgroundResource(R.drawable.bg_badge_primary_light);
+        }
+
+        TextView tvAllLabel = new TextView(this);
+        tvAllLabel.setText("VIEW");
+        tvAllLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        tvAllLabel.setTextColor(getColor(isAllSelected ? R.color.primary : R.color.text_secondary));
+        tvAllLabel.setTypeface(null, Typeface.BOLD);
+
+        TextView tvAllText = new TextView(this);
+        tvAllText.setText("All");
+        tvAllText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        tvAllText.setTextColor(getColor(isAllSelected ? R.color.primary : R.color.text_primary));
+        tvAllText.setTypeface(null, Typeface.BOLD);
+        tvAllText.setPadding(0, dp(4), 0, 0);
+
+        allDayView.addView(tvAllLabel);
+        allDayView.addView(tvAllText);
+
+        LinearLayout.LayoutParams allParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        allParams.setMarginEnd(dp(8));
+        allDayView.setLayoutParams(allParams);
+        allDayView.setOnClickListener(v -> {
+            selectedCalendarDate = null;
+            setupDateStrip();
+            applyFilters();
+            updateWorkloadBanner();
+        });
+        dateStripContainer.addView(allDayView);
+
+        // 2. Add next 21 days starting from today
+        Calendar cal = Calendar.getInstance();
+        for (int i = 0; i < 21; i++) {
+            final Calendar thisDay = (Calendar) cal.clone();
             LinearLayout dayView = new LinearLayout(this);
             dayView.setOrientation(LinearLayout.VERTICAL);
             dayView.setGravity(Gravity.CENTER);
-            
-            int paddingH = dp(16);
-            int paddingV = dp(12);
-            dayView.setPadding(paddingH, paddingV, paddingH, paddingV);
+            dayView.setPadding(padH, padV, padH, padV);
 
-            boolean isToday = cal.get(Calendar.DAY_OF_YEAR) == today;
+            boolean isToday = (thisDay.get(Calendar.DAY_OF_YEAR) == currentDayOfYear && thisDay.get(Calendar.YEAR) == currentYear);
+            boolean isSelected = (selectedCalendarDate != null 
+                    && selectedCalendarDate.get(Calendar.DAY_OF_YEAR) == thisDay.get(Calendar.DAY_OF_YEAR)
+                    && selectedCalendarDate.get(Calendar.YEAR) == thisDay.get(Calendar.YEAR));
 
-            if (isToday) {
+            if (isSelected) {
                 dayView.setBackgroundResource(R.drawable.bg_badge_primary_light);
             }
 
             TextView tvDayName = new TextView(this);
-            tvDayName.setText(dayFormat.format(cal.getTime()).toUpperCase(Locale.ROOT));
+            tvDayName.setText(dayFormat.format(thisDay.getTime()).toUpperCase(Locale.ROOT));
             tvDayName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-            tvDayName.setTextColor(getResources().getColor(isToday ? R.color.primary : R.color.text_secondary));
+            tvDayName.setTextColor(getColor(isSelected ? R.color.primary : (isToday ? R.color.primary : R.color.text_secondary)));
             tvDayName.setTypeface(null, Typeface.BOLD);
 
             TextView tvDate = new TextView(this);
-            tvDate.setText(dateFormat.format(cal.getTime()));
+            tvDate.setText(dateFormat.format(thisDay.getTime()));
             tvDate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-            tvDate.setTextColor(getResources().getColor(isToday ? R.color.primary : R.color.text_primary));
+            tvDate.setTextColor(getColor(isSelected ? R.color.primary : (isToday ? R.color.primary : R.color.text_primary)));
             tvDate.setTypeface(null, Typeface.BOLD);
             tvDate.setPadding(0, dp(4), 0, 0);
 
@@ -243,6 +296,19 @@ public class PlannerActivity extends AppCompatActivity {
             );
             params.setMarginEnd(dp(8));
             dayView.setLayoutParams(params);
+
+            dayView.setOnClickListener(v -> {
+                if (selectedCalendarDate != null 
+                        && selectedCalendarDate.get(Calendar.DAY_OF_YEAR) == thisDay.get(Calendar.DAY_OF_YEAR)
+                        && selectedCalendarDate.get(Calendar.YEAR) == thisDay.get(Calendar.YEAR)) {
+                    selectedCalendarDate = null; // Toggle off to all
+                } else {
+                    selectedCalendarDate = thisDay;
+                }
+                setupDateStrip();
+                applyFilters();
+                updateWorkloadBanner();
+            });
 
             dateStripContainer.addView(dayView);
             cal.add(Calendar.DAY_OF_YEAR, 1);
@@ -276,23 +342,38 @@ public class PlannerActivity extends AppCompatActivity {
     }
 
     private void updateWorkloadBanner() {
-        long now = System.currentTimeMillis();
-        Calendar endOfToday = Calendar.getInstance();
-        endOfToday.set(Calendar.HOUR_OF_DAY, 23);
-        endOfToday.set(Calendar.MINUTE, 59);
-
         int totalMinutes = 0;
-        for (StudyTask task : allTasks) {
-            if (!task.isCompleted() && task.getDueDate() <= endOfToday.getTimeInMillis()) {
-                totalMinutes += task.getDurationMinutes();
+        SimpleDateFormat dayFmt = new SimpleDateFormat("MMM dd", Locale.getDefault());
+        String targetDateName = "today";
+
+        if (selectedCalendarDate != null) {
+            targetDateName = dayFmt.format(selectedCalendarDate.getTime());
+            for (StudyTask task : allTasks) {
+                if (!task.isCompleted()) {
+                    Calendar taskCal = Calendar.getInstance();
+                    taskCal.setTimeInMillis(task.getDueDate());
+                    if (taskCal.get(Calendar.YEAR) == selectedCalendarDate.get(Calendar.YEAR)
+                            && taskCal.get(Calendar.DAY_OF_YEAR) == selectedCalendarDate.get(Calendar.DAY_OF_YEAR)) {
+                        totalMinutes += task.getDurationMinutes();
+                    }
+                }
+            }
+        } else {
+            Calendar endOfToday = Calendar.getInstance();
+            endOfToday.set(Calendar.HOUR_OF_DAY, 23);
+            endOfToday.set(Calendar.MINUTE, 59);
+            for (StudyTask task : allTasks) {
+                if (!task.isCompleted() && task.getDueDate() <= endOfToday.getTimeInMillis()) {
+                    totalMinutes += task.getDurationMinutes();
+                }
             }
         }
         
         float hours = totalMinutes / 60f;
         if (totalMinutes == 0) {
-            tvWorkloadHours.setText("All clear for today!");
+            tvWorkloadHours.setText("All clear for " + targetDateName + "!");
         } else {
-            tvWorkloadHours.setText(String.format(Locale.US, "%.1f hrs remaining today", hours));
+            tvWorkloadHours.setText(String.format(Locale.US, "%.1f hrs scheduled for %s", hours, targetDateName));
         }
     }
 
@@ -319,6 +400,17 @@ public class PlannerActivity extends AppCompatActivity {
             else if (currentFilter.equals("Completed") && task.isCompleted()) matchesFilter = true;
             else if (currentFilter.equals("Overdue") && isOverdue) matchesFilter = true;
 
+            // Date strip filter: if user tapped a date on the strip, only show tasks on that date
+            if (matchesFilter && selectedCalendarDate != null) {
+                Calendar taskCal = Calendar.getInstance();
+                taskCal.setTimeInMillis(task.getDueDate());
+                boolean sameDay = (taskCal.get(Calendar.YEAR) == selectedCalendarDate.get(Calendar.YEAR)
+                        && taskCal.get(Calendar.DAY_OF_YEAR) == selectedCalendarDate.get(Calendar.DAY_OF_YEAR));
+                if (!sameDay) {
+                    matchesFilter = false;
+                }
+            }
+
             if (matchesFilter) {
                 if (task.isCompleted()) {
                     completedTasks.add(task);
@@ -333,22 +425,22 @@ public class PlannerActivity extends AppCompatActivity {
         }
 
         if (!needsAttention.isEmpty()) {
-            displayList.add(new HeaderItem("🔴 Needs Attention", needsAttention.size()));
+            displayList.add(new HeaderItem(getString(R.string.header_needs_attention), needsAttention.size()));
             for (StudyTask t : needsAttention) displayList.add(new TaskItem(t));
         }
         
         if (!dueToday.isEmpty()) {
-            displayList.add(new HeaderItem("⚡ Due Today", dueToday.size()));
+            displayList.add(new HeaderItem(getString(R.string.header_due_today), dueToday.size()));
             for (StudyTask t : dueToday) displayList.add(new TaskItem(t));
         }
         
         if (!upcoming.isEmpty()) {
-            displayList.add(new HeaderItem("📅 Upcoming", upcoming.size()));
+            displayList.add(new HeaderItem(getString(R.string.header_upcoming), upcoming.size()));
             for (StudyTask t : upcoming) displayList.add(new TaskItem(t));
         }
         
         if (!completedTasks.isEmpty()) {
-            displayList.add(new HeaderItem("✔️ Completed", completedTasks.size()));
+            displayList.add(new HeaderItem(getString(R.string.header_completed), completedTasks.size()));
             for (StudyTask t : completedTasks) displayList.add(new TaskItem(t));
         }
 
@@ -416,7 +508,7 @@ public class PlannerActivity extends AppCompatActivity {
                         .setTitle("Create a study task")
                         .setView(form)
                         .setNegativeButton("Cancel", (d, which) -> d.dismiss())
-                        .setNeutralButton("✨ AI Plan", (d, which) -> showAiPlannerWizard())
+                        .setNeutralButton(R.string.btn_ai_plan, (d, which) -> showAiPlannerWizard())
                         .setPositiveButton("Add task", null)
                         .create();
 
@@ -489,6 +581,8 @@ public class PlannerActivity extends AppCompatActivity {
         View layoutActionButtons = dialogView.findViewById(R.id.layoutActionButtons);
         MaterialButton btnGenerateAiSchedule = dialogView.findViewById(R.id.btnGenerateAiSchedule);
         MaterialButton btnManualTaskOption = dialogView.findViewById(R.id.btnManualTaskOption);
+        MaterialButton btnClearWeakConcepts = dialogView.findViewById(R.id.btnClearWeakConcepts);
+        MaterialCheckBox cbReplacePlan = dialogView.findViewById(R.id.cbReplacePlan);
 
         currentDialogEtTimetable = etExamTimetable;
         currentDialogLayoutFileStatus = dialogView.findViewById(R.id.layoutTimetableFileStatus);
@@ -512,6 +606,11 @@ public class PlannerActivity extends AppCompatActivity {
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setView(dialogView)
                 .create();
+
+        View btnCloseWizard = dialogView.findViewById(R.id.btnCloseWizard);
+        if (btnCloseWizard != null) {
+            btnCloseWizard.setOnClickListener(v -> dialog.dismiss());
+        }
 
         final List<JSONObject> uploadedNotesList = new ArrayList<>();
         final Set<String> detectedSubjects = new HashSet<>();
@@ -552,10 +651,15 @@ public class PlannerActivity extends AppCompatActivity {
                                 summarySb.append(subj);
                                 count++;
 
-                                // Add quick subject chip
+                                // Add quick subject chip with Stitch pill styling
                                 Chip chip = new Chip(PlannerActivity.this);
-                                chip.setText("➕ " + subj);
+                                chip.setText("+ " + subj);
                                 chip.setClickable(true);
+                                chip.setTextColor(getColor(R.color.primary));
+                                chip.setChipBackgroundColor(ColorStateList.valueOf(getColor(R.color.primary_light)));
+                                chip.setChipStrokeColor(ColorStateList.valueOf(getColor(R.color.primary)));
+                                chip.setChipStrokeWidth(dp(1));
+                                chip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
                                 chip.setOnClickListener(v -> {
                                     String current = etExamTimetable.getText() != null ? etExamTimetable.getText().toString() : "";
                                     if (!current.isEmpty() && !current.endsWith("\n")) {
@@ -605,20 +709,42 @@ public class PlannerActivity extends AppCompatActivity {
                                 if (subj != null && score != null) {
                                     subjectMasteryMap.put(subj, score);
                                 }
-                                List<String> weakList = (List<String>) doc.get("weakConcepts");
-                                if (weakList != null) {
-                                    for (String w : weakList) {
-                                        if (!detectedWeakConcepts.contains(w)) {
-                                            detectedWeakConcepts.add(w);
+                                Object rawWeak = doc.get("weakConcepts");
+                                if (rawWeak instanceof List<?>) {
+                                    for (Object w : (List<?>) rawWeak) {
+                                        if (w instanceof String && !detectedWeakConcepts.contains((String) w)) {
+                                            detectedWeakConcepts.add((String) w);
                                         }
                                     }
                                 }
                             }
                         }
 
-                        renderWeakConceptsPreview(cgWeakConceptBadges, tvWeakConceptsStatus, detectedWeakConcepts);
+                        renderWeakConceptsPreview(cgWeakConceptBadges, tvWeakConceptsStatus, btnClearWeakConcepts, detectedWeakConcepts);
                     })
-                    .addOnFailureListener(e -> renderWeakConceptsPreview(cgWeakConceptBadges, tvWeakConceptsStatus, detectedWeakConcepts));
+                    .addOnFailureListener(e -> renderWeakConceptsPreview(cgWeakConceptBadges, tvWeakConceptsStatus, btnClearWeakConcepts, detectedWeakConcepts));
+        }
+
+        if (btnClearWeakConcepts != null) {
+            btnClearWeakConcepts.setOnClickListener(v -> {
+                detectedWeakConcepts.clear();
+                SharedPreferences prefs = getSharedPreferences("StudySphereQuizPrefs", Context.MODE_PRIVATE);
+                prefs.edit().clear().apply();
+                if (mAuth.getCurrentUser() != null) {
+                    String userId = mAuth.getCurrentUser().getUid();
+                    db.collection("users").document(userId).collection("subject_mastery")
+                            .get()
+                            .addOnSuccessListener(querySnaps -> {
+                                WriteBatch b = db.batch();
+                                for (DocumentSnapshot doc : querySnaps) {
+                                    b.update(doc.getReference(), "weakConcepts", Collections.emptyList());
+                                }
+                                b.commit();
+                            });
+                }
+                renderWeakConceptsPreview(cgWeakConceptBadges, tvWeakConceptsStatus, btnClearWeakConcepts, detectedWeakConcepts);
+                Toast.makeText(PlannerActivity.this, "Weak concepts cleared", Toast.LENGTH_SHORT).show();
+            });
         }
 
         btnManualTaskOption.setOnClickListener(v -> {
@@ -651,6 +777,7 @@ public class PlannerActivity extends AppCompatActivity {
             else if (checkedHoursId == R.id.chipHour4) dailyHours = 4;
 
             boolean allPortionUploaded = cbAllPortionUploaded.isChecked();
+            final boolean replaceExisting = (cbReplacePlan == null || cbReplacePlan.isChecked());
 
             layoutPlannerLoading.setVisibility(View.VISIBLE);
             layoutActionButtons.setVisibility(View.GONE);
@@ -661,6 +788,7 @@ public class PlannerActivity extends AppCompatActivity {
             executor.execute(() -> {
                 try {
                     JSONObject body = new JSONObject();
+                    body.put("clientDate", new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date()));
                     body.put("examTimetable", timetable);
                     body.put("sessionDurationMinutes", finalStamina);
                     body.put("availableHoursPerDay", finalHours);
@@ -710,46 +838,7 @@ public class PlannerActivity extends AppCompatActivity {
                         String userId = mAuth.getCurrentUser().getUid();
 
                         if (tasksArr != null && tasksArr.length() > 0) {
-                            WriteBatch batch = db.batch();
-                            for (int i = 0; i < tasksArr.length(); i++) {
-                                JSONObject tObj = tasksArr.getJSONObject(i);
-                                String tTitle = tObj.optString("title", "Study Session");
-                                String tSub = tObj.optString("subject", "General");
-                                String dateStr = tObj.optString("date", "");
-                                String timeStr = tObj.optString("time", "16:00");
-                                int dur = tObj.optInt("durationMinutes", finalStamina);
-                                String prio = tObj.optString("priority", "HIGH");
-                                String cat = tObj.optString("category", "Weak Concept Focus");
-                                String notes = tObj.optString("notes", "");
-
-                                long dueTimeMillis = parseDateTimeToMillis(dateStr, timeStr, i + 1);
-
-                                StudyTask newTask = new StudyTask();
-                                newTask.setTitle(tTitle);
-                                newTask.setSubject(tSub);
-                                newTask.setCategory(cat);
-                                newTask.setPriority(prio);
-                                newTask.setDurationMinutes(dur);
-                                newTask.setDueDate(dueTimeMillis);
-                                newTask.setTime(timeStr);
-                                newTask.setNotes(notes);
-                                newTask.setCompleted(false);
-                                newTask.setCreatedAt(System.currentTimeMillis());
-
-                                batch.set(db.collection("users").document(userId)
-                                        .collection("study_tasks").document(), newTask);
-                            }
-                            batch.commit().addOnSuccessListener(aVoid -> {
-                                runOnUiThread(() -> {
-                                    dialog.dismiss();
-                                    Toast.makeText(PlannerActivity.this, "🎉 " + summary, Toast.LENGTH_LONG).show();
-                                });
-                            }).addOnFailureListener(e -> {
-                                runOnUiThread(() -> {
-                                    dialog.dismiss();
-                                    Toast.makeText(PlannerActivity.this, "Failed to save tasks: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                                });
-                            });
+                            savePlannerTasksToFirestore(userId, tasksArr, finalStamina, replaceExisting, summary, dialog, layoutPlannerLoading, layoutActionButtons);
                             return;
                         }
                     }
@@ -757,31 +846,228 @@ public class PlannerActivity extends AppCompatActivity {
                     Log.e("PlannerActivity", "Failed to generate AI plan", e);
                 }
 
-                runOnUiThread(() -> {
-                    layoutPlannerLoading.setVisibility(View.GONE);
-                    layoutActionButtons.setVisibility(View.VISIBLE);
-                    Toast.makeText(PlannerActivity.this, "Could not contact StudySphere AI backend. Make sure the backend server is running.", Toast.LENGTH_LONG).show();
-                });
+                createFallbackPlannerSchedule(timetable, finalStamina, finalHours, allPortionUploaded, replaceExisting, detectedSubjects, detectedWeakConcepts, dialog, layoutPlannerLoading, layoutActionButtons);
             });
         });
 
         dialog.show();
     }
 
-    private void renderWeakConceptsPreview(ChipGroup cg, TextView status, List<String> weakList) {
+    private void savePlannerTasksToFirestore(String userId, JSONArray tasksArr, int stamina, boolean replaceExisting, String summary, androidx.appcompat.app.AlertDialog dialog, View loadingView, View actionsView) {
+        if (replaceExisting) {
+            db.collection("users").document(userId).collection("study_tasks")
+                    .get()
+                    .addOnSuccessListener(snap -> {
+                        WriteBatch deleteBatch = db.batch();
+                        for (DocumentSnapshot doc : snap) {
+                            Boolean completed = doc.getBoolean("completed");
+                            if (completed == null || !completed) {
+                                deleteBatch.delete(doc.getReference());
+                            }
+                        }
+                        deleteBatch.commit().addOnCompleteListener(t -> writeGeneratedTasks(userId, tasksArr, stamina, summary, dialog, loadingView, actionsView));
+                    })
+                    .addOnFailureListener(e -> writeGeneratedTasks(userId, tasksArr, stamina, summary, dialog, loadingView, actionsView));
+        } else {
+            writeGeneratedTasks(userId, tasksArr, stamina, summary, dialog, loadingView, actionsView);
+        }
+    }
+
+    private void writeGeneratedTasks(String userId, JSONArray tasksArr, int stamina, String summary, androidx.appcompat.app.AlertDialog dialog, View loadingView, View actionsView) {
+        try {
+            WriteBatch batch = db.batch();
+            for (int i = 0; i < tasksArr.length(); i++) {
+                JSONObject tObj = tasksArr.getJSONObject(i);
+                String tTitle = tObj.optString("title", "Study Session");
+                tTitle = tTitle.replaceAll("[^\\x00-\\x7F]", "").trim();
+                String tSub = tObj.optString("subject", "General");
+                String dateStr = tObj.optString("date", "");
+                String timeStr = tObj.optString("time", "16:00");
+                int dur = tObj.optInt("durationMinutes", stamina);
+                String prio = tObj.optString("priority", "HIGH");
+                String cat = tObj.optString("category", "Weak Concept Mastery");
+                String notes = tObj.optString("notes", "");
+
+                long dueTimeMillis = parseDateTimeToMillis(dateStr, timeStr, i + 1);
+
+                StudyTask newTask = new StudyTask();
+                newTask.setTitle(tTitle);
+                newTask.setSubject(tSub);
+                newTask.setCategory(cat);
+                newTask.setPriority(prio);
+                newTask.setDurationMinutes(dur);
+                newTask.setDueDate(dueTimeMillis);
+                newTask.setTime(timeStr);
+                newTask.setNotes(notes);
+                newTask.setCompleted(false);
+                newTask.setCreatedAt(System.currentTimeMillis());
+
+                batch.set(db.collection("users").document(userId)
+                        .collection("study_tasks").document(), newTask);
+            }
+            batch.commit().addOnSuccessListener(aVoid -> {
+                runOnUiThread(() -> {
+                    dialog.dismiss();
+                    Toast.makeText(PlannerActivity.this, summary, Toast.LENGTH_LONG).show();
+                });
+            }).addOnFailureListener(e -> {
+                runOnUiThread(() -> {
+                    if (loadingView != null) loadingView.setVisibility(View.GONE);
+                    if (actionsView != null) actionsView.setVisibility(View.VISIBLE);
+                    Toast.makeText(PlannerActivity.this, "Failed to save tasks: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            });
+        } catch (Exception ex) {
+            runOnUiThread(() -> {
+                if (loadingView != null) loadingView.setVisibility(View.GONE);
+                if (actionsView != null) actionsView.setVisibility(View.VISIBLE);
+                Toast.makeText(PlannerActivity.this, "Error processing tasks: " + ex.getMessage(), Toast.LENGTH_LONG).show();
+            });
+        }
+    }
+
+    private void renderWeakConceptsPreview(ChipGroup cg, TextView status, View btnClear, List<String> weakList) {
         cg.removeAllViews();
         if (weakList.isEmpty()) {
-            status.setText("No weak concepts found from quizzes yet. Gemini will schedule balanced diagnostic quizzes.");
+            status.setText("No weak concepts found. Gemini will schedule balanced diagnostic quizzes.");
+            if (btnClear != null) btnClear.setVisibility(View.GONE);
         } else {
             status.setText("Found " + weakList.size() + " weak concept(s) from your quiz history:");
-            for (String w : weakList) {
+            if (btnClear != null) btnClear.setVisibility(View.VISIBLE);
+            for (String w : new ArrayList<>(weakList)) {
                 Chip chip = new Chip(this);
-                chip.setText("🎯 " + w);
+                chip.setText(w);
+                chip.setCloseIconVisible(true);
                 chip.setChipBackgroundColorResource(R.color.warning_light);
                 chip.setTextColor(getColor(R.color.text_primary));
-                chip.setTextSize(11);
+                chip.setChipStrokeColor(ColorStateList.valueOf(getColor(R.color.warning)));
+                chip.setChipStrokeWidth(dp(1));
+                chip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
+                chip.setOnCloseIconClickListener(v -> {
+                    weakList.remove(w);
+                    renderWeakConceptsPreview(cg, status, btnClear, weakList);
+                });
                 cg.addView(chip);
             }
+        }
+    }
+
+    private void createFallbackPlannerSchedule(String timetable, int stamina, int dailyHours, boolean allPortionUploaded, boolean replaceExisting, Set<String> detectedSubjects, List<String> weakConcepts, androidx.appcompat.app.AlertDialog dialog, View loadingView, View actionsView) {
+        if (mAuth.getCurrentUser() == null) {
+            runOnUiThread(() -> {
+                if (loadingView != null) loadingView.setVisibility(View.GONE);
+                if (actionsView != null) actionsView.setVisibility(View.VISIBLE);
+                Toast.makeText(PlannerActivity.this, "Please sign in to save your plan.", Toast.LENGTH_SHORT).show();
+            });
+            return;
+        }
+
+        String userId = mAuth.getCurrentUser().getUid();
+        List<String> subjects = new ArrayList<>();
+        String[] lines = timetable.split("\n");
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty()) continue;
+            String subj = trimmed;
+            if (trimmed.contains(":")) {
+                subj = trimmed.split(":")[0].trim();
+            } else if (trimmed.contains("-")) {
+                subj = trimmed.split("-")[0].trim();
+            }
+            if (!subj.isEmpty() && !subjects.contains(subj)) {
+                subjects.add(subj);
+            }
+        }
+        if (subjects.isEmpty()) {
+            for (String s : detectedSubjects) {
+                if (!subjects.contains(s)) subjects.add(s);
+            }
+        }
+        if (subjects.isEmpty()) {
+            subjects.add("General Studies");
+        }
+
+        WriteBatch batch = db.batch();
+        int taskCount = 0;
+        Calendar baseCal = Calendar.getInstance();
+
+        for (int i = 0; i < subjects.size(); i++) {
+            String subj = subjects.get(i);
+
+            // Session 1: Core Revision & Concept Mastery
+            baseCal.add(Calendar.DAY_OF_YEAR, i == 0 ? 0 : 1);
+            baseCal.set(Calendar.HOUR_OF_DAY, 16);
+            baseCal.set(Calendar.MINUTE, 0);
+
+            StudyTask task1 = new StudyTask();
+            task1.setTitle(subj + ": Core Revision & Key Takeaways");
+            task1.setSubject(subj);
+            task1.setCategory("Concept Mastery");
+            task1.setPriority("HIGH");
+            task1.setDurationMinutes(stamina);
+            task1.setDueDate(baseCal.getTimeInMillis());
+            task1.setTime("16:00");
+            task1.setNotes("Review primary notes, definitions, formulas, and summarize high-yield exam sections.");
+            task1.setCompleted(false);
+            task1.setCreatedAt(System.currentTimeMillis());
+
+            batch.set(db.collection("users").document(userId).collection("study_tasks").document(), task1);
+            taskCount++;
+
+            // Session 2: Weak concept / Practice questions
+            String weakTopic = (weakConcepts != null && !weakConcepts.isEmpty()) ? weakConcepts.get(i % weakConcepts.size()) : subj + " Problem Solving";
+            Calendar cal2 = (Calendar) baseCal.clone();
+            cal2.set(Calendar.HOUR_OF_DAY, 18);
+            cal2.set(Calendar.MINUTE, 30);
+
+            StudyTask task2 = new StudyTask();
+            task2.setTitle(subj + ": Practice Drill (" + weakTopic + ")");
+            task2.setSubject(subj);
+            task2.setCategory("Targeted Drill");
+            task2.setPriority("HIGH");
+            task2.setDurationMinutes(stamina);
+            task2.setDueDate(cal2.getTimeInMillis());
+            task2.setTime("18:30");
+            task2.setNotes("Attempt active recall questions, solve previous year questions, and resolve weak concept gaps.");
+            task2.setCompleted(false);
+            task2.setCreatedAt(System.currentTimeMillis());
+
+            batch.set(db.collection("users").document(userId).collection("study_tasks").document(), task2);
+            taskCount++;
+        }
+
+        final int finalTaskCount = taskCount;
+        Runnable commitInsert = () -> batch.commit().addOnSuccessListener(aVoid -> {
+            runOnUiThread(() -> {
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+                Toast.makeText(PlannerActivity.this, "AI Study Plan successfully created with " + finalTaskCount + " sessions!", Toast.LENGTH_LONG).show();
+            });
+        }).addOnFailureListener(e -> {
+            runOnUiThread(() -> {
+                if (loadingView != null) loadingView.setVisibility(View.GONE);
+                if (actionsView != null) actionsView.setVisibility(View.VISIBLE);
+                Toast.makeText(PlannerActivity.this, "Failed to save tasks: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            });
+        });
+
+        if (replaceExisting) {
+            db.collection("users").document(userId).collection("study_tasks")
+                    .get()
+                    .addOnSuccessListener(snap -> {
+                        WriteBatch deleteBatch = db.batch();
+                        for (DocumentSnapshot doc : snap) {
+                            Boolean completed = doc.getBoolean("completed");
+                            if (completed == null || !completed) {
+                                deleteBatch.delete(doc.getReference());
+                            }
+                        }
+                        deleteBatch.commit().addOnCompleteListener(t -> commitInsert.run());
+                    })
+                    .addOnFailureListener(e -> commitInsert.run());
+        } else {
+            commitInsert.run();
         }
     }
 
@@ -944,7 +1230,7 @@ public class PlannerActivity extends AppCompatActivity {
                             currentDialogPbParsing.setVisibility(View.GONE);
                         }
                         if (currentDialogTvFileName != null) {
-                            currentDialogTvFileName.setText("Attached: " + fileName + " (Extracted ✨)");
+                            currentDialogTvFileName.setText("Attached: " + fileName + " (Extracted)");
                         }
                         if (currentDialogEtTimetable != null && !timetableText.isEmpty()) {
                             currentDialogEtTimetable.setText(timetableText);

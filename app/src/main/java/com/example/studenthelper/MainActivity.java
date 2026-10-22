@@ -21,7 +21,9 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView tvGreeting;
     private TextView tvTasksCount;
+    private TextView tvTasksLabel;
     private TextView tvStudyHours;
+    private TextView tvStudyHoursLabel;
     private TextView tvPlanTitle;
     private TextView tvPlanSubtitle;
 
@@ -49,7 +51,9 @@ public class MainActivity extends AppCompatActivity {
     private void initializeViews() {
         tvGreeting = findViewById(R.id.tvGreeting);
         tvTasksCount = findViewById(R.id.tvTasksCount);
+        tvTasksLabel = findViewById(R.id.tvTasksLabel);
         tvStudyHours = findViewById(R.id.tvStudyHours);
+        tvStudyHoursLabel = findViewById(R.id.tvStudyHoursLabel);
         tvPlanTitle = findViewById(R.id.tvPlanTitle);
         tvPlanSubtitle = findViewById(R.id.tvPlanSubtitle);
 
@@ -64,19 +68,19 @@ public class MainActivity extends AppCompatActivity {
 
         String greeting;
         if (hour < 12) {
-            greeting = "Good morning";
+            greeting = getString(R.string.greeting_morning);
         } else if (hour < 17) {
-            greeting = "Good afternoon";
+            greeting = getString(R.string.greeting_afternoon);
         } else {
-            greeting = "Good evening";
+            greeting = getString(R.string.greeting_evening);
         }
 
-        String displayName = "Student";
+        String displayName = getString(R.string.student_default);
         if (mAuth.getCurrentUser() != null && mAuth.getCurrentUser().getDisplayName() != null && !mAuth.getCurrentUser().getDisplayName().isEmpty()) {
             displayName = mAuth.getCurrentUser().getDisplayName();
         }
 
-        tvGreeting.setText(greeting + ", " + displayName + " 👋");
+        tvGreeting.setText(greeting + ", " + displayName);
     }
 
     private void setupDashboard() {
@@ -91,30 +95,87 @@ public class MainActivity extends AppCompatActivity {
                     if (value != null) {
                         int completed = 0;
                         int pending = 0;
+                        int pendingMinutes = 0;
+                        int completedMinutes = 0;
+
                         for (com.google.firebase.firestore.DocumentSnapshot doc : value.getDocuments()) {
                             Boolean isCompleted = doc.getBoolean("completed");
+                            Long dur = doc.getLong("durationMinutes");
+                            int minutes = dur != null ? dur.intValue() : 45;
+
                             if (isCompleted != null && isCompleted) {
                                 completed++;
+                                completedMinutes += minutes;
                             } else {
                                 pending++;
+                                pendingMinutes += minutes;
                             }
                         }
-                        updateDashboardStats(completed, pending);
+                        updateDashboardStats(completed, pending, pendingMinutes, completedMinutes);
                     }
                 });
     }
 
-    private void updateDashboardStats(int completed, int pending) {
-        tvTasksCount.setText(String.valueOf(completed));
-
+    private void updateDashboardStats(int completed, int pending, int pendingMinutes, int completedMinutes) {
         if (pending > 0) {
-            tvPlanTitle.setText(pending + (pending == 1 ? " task remaining" : " tasks remaining"));
-            tvPlanSubtitle.setText("Keep going! Complete your next study task.");
+            tvTasksCount.setText(String.valueOf(pending));
+            if (tvTasksLabel != null) {
+                tvTasksLabel.setText(getString(R.string.overview_tasks_to_do));
+            }
+
+            if (pendingMinutes >= 60) {
+                int hours = pendingMinutes / 60;
+                int remMinutes = pendingMinutes % 60;
+                if (remMinutes == 0) {
+                    tvStudyHours.setText(hours + " hrs");
+                } else {
+                    tvStudyHours.setText(String.format(Locale.getDefault(), "%.1f hrs", pendingMinutes / 60.0));
+                }
+            } else {
+                tvStudyHours.setText(pendingMinutes + " min");
+            }
+            if (tvStudyHoursLabel != null) {
+                tvStudyHoursLabel.setText(getString(R.string.overview_study_time));
+            }
+
+            tvPlanTitle.setText(pending == 1 ? getString(R.string.plan_single_task_remaining) : getString(R.string.plan_multiple_tasks_remaining, pending));
+            tvPlanSubtitle.setText(getString(R.string.plan_keep_going));
+        } else if (completed > 0) {
+            tvTasksCount.setText(String.valueOf(completed));
+            if (tvTasksLabel != null) {
+                tvTasksLabel.setText(getString(R.string.overview_tasks_completed));
+            }
+
+            if (completedMinutes >= 60) {
+                int hours = completedMinutes / 60;
+                int remMinutes = completedMinutes % 60;
+                if (remMinutes == 0) {
+                    tvStudyHours.setText(hours + " hrs");
+                } else {
+                    tvStudyHours.setText(String.format(Locale.getDefault(), "%.1f hrs", completedMinutes / 60.0));
+                }
+            } else {
+                tvStudyHours.setText(completedMinutes + " min");
+            }
+            if (tvStudyHoursLabel != null) {
+                tvStudyHoursLabel.setText(getString(R.string.overview_study_time_today));
+            }
+
+            tvPlanTitle.setText(getString(R.string.plan_all_caught_up));
+            tvPlanSubtitle.setText(getString(R.string.plan_add_new));
         } else {
-            tvPlanTitle.setText("You're all caught up!");
-            tvPlanSubtitle.setText("Add a new study task whenever you're ready.");
+            tvTasksCount.setText("0");
+            if (tvTasksLabel != null) {
+                tvTasksLabel.setText(getString(R.string.overview_tasks_to_do));
+            }
+            tvStudyHours.setText("0 min");
+            if (tvStudyHoursLabel != null) {
+                tvStudyHoursLabel.setText(getString(R.string.overview_study_time));
+            }
+
+            tvPlanTitle.setText(getString(R.string.plan_all_caught_up));
+            tvPlanSubtitle.setText(getString(R.string.plan_add_new));
         }
-        tvStudyHours.setText("0 min"); // Static for now
     }
 
     @Override

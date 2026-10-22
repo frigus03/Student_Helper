@@ -309,7 +309,7 @@ public class NotesActivity extends AppCompatActivity {
             attachCard.setPadding(dp(14), dp(12), dp(14), dp(12));
 
             TextView tvFile = new TextView(this);
-            tvFile.setText("📎 " + note.getFileName());
+            tvFile.setText("File: " + note.getFileName());
             tvFile.setTextSize(14);
             tvFile.setTextColor(getColor(R.color.text_primary));
             tvFile.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -331,14 +331,14 @@ public class NotesActivity extends AppCompatActivity {
             layout.addView(attachCard, attachCardParams);
         }
 
-        // 4. ✨ Gemini AI Concise Revision Summary Card
+        // 4. Gemini AI Concise Revision Summary Card
         LinearLayout aiSummaryCard = new LinearLayout(this);
         aiSummaryCard.setOrientation(LinearLayout.VERTICAL);
         aiSummaryCard.setBackgroundResource(R.drawable.bg_badge_primary_light);
         aiSummaryCard.setPadding(dp(16), dp(14), dp(16), dp(14));
 
         TextView tvSummaryHeader = new TextView(this);
-        tvSummaryHeader.setText("✨ AI Revision Summary (Gemini)");
+        tvSummaryHeader.setText(getString(R.string.ai_revision_summary));
         tvSummaryHeader.setTextSize(14);
         tvSummaryHeader.setTextColor(getColor(R.color.primary));
         tvSummaryHeader.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -356,7 +356,7 @@ public class NotesActivity extends AppCompatActivity {
         aiSummaryCard.addView(tvSummaryContent, contentParams);
 
         MaterialButton btnGenerateSummary = new MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
-        btnGenerateSummary.setText("✨ Generate AI Concise Summary");
+        btnGenerateSummary.setText(getString(R.string.btn_generate_summary));
         btnGenerateSummary.setTextSize(12);
         btnGenerateSummary.setVisibility(View.GONE);
         btnGenerateSummary.setOnClickListener(v -> {
@@ -415,7 +415,7 @@ public class NotesActivity extends AppCompatActivity {
 
         new MaterialAlertDialogBuilder(this)
                 .setView(scrollView)
-                .setPositiveButton("💬 Ask AI Tutor", (d, which) -> {
+                .setPositiveButton(R.string.btn_ask_ai, (d, which) -> {
                     Intent intent = new Intent(NotesActivity.this, AssistantActivity.class);
                     intent.putExtra(AssistantActivity.EXTRA_CONTEXT, note.getContent());
                     intent.putExtra(AssistantActivity.EXTRA_SUBJECT, note.getSubject());
@@ -423,7 +423,7 @@ public class NotesActivity extends AppCompatActivity {
                     intent.putExtra(AssistantActivity.EXTRA_NOTE_ID, note.getId());
                     startActivity(intent);
                 })
-                .setNeutralButton("⚡ Adaptive Quiz", (d, which) -> {
+                .setNeutralButton(R.string.btn_practice_quiz, (d, which) -> {
                     Intent intent = new Intent(NotesActivity.this, QuizActivity.class);
                     intent.putExtra(QuizActivity.EXTRA_SUBJECT, note.getSubject());
                     intent.putExtra(QuizActivity.EXTRA_MATERIAL, note.getContent());
@@ -431,7 +431,7 @@ public class NotesActivity extends AppCompatActivity {
                     intent.putExtra(QuizActivity.EXTRA_NOTE_ID, note.getId());
                     startActivity(intent);
                 })
-                .setNegativeButton("✏️ Edit Note", (d, which) -> showAddNoteDialog(note))
+                .setNegativeButton(R.string.btn_edit_note, (d, which) -> showAddNoteDialog(note))
                 .show();
     }
 

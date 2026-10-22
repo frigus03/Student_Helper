@@ -2,15 +2,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootPlannerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:fitsSystemWindows="true"
     android:background="@color/background">
 
     <!-- Top Bar -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="60dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingHorizontal="20dp"
@@ -22,20 +24,25 @@
             android:layout_weight="1"
             android:text="Planner"
             android:textColor="@color/text_primary"
-            android:textSize="26sp"
+            android:textSize="24sp"
             android:textStyle="bold"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAiPlan"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="38dp"
             android:layout_marginEnd="16dp"
-            android:text="✨ AI Plan"
+            android:paddingHorizontal="14dp"
+            android:text="@string/btn_ai_plan"
             android:textAllCaps="false"
             android:textStyle="bold"
-            app:cornerRadius="18dp"
+            app:icon="@drawable/ic_assistant_sparkle"
+            app:iconTint="@color/primary"
+            app:backgroundTint="@color/primary_light"
+            app:cornerRadius="19dp"
             app:strokeColor="@color/primary"
+            app:strokeWidth="1dp"
             android:textColor="@color/primary"/>
 
         <ImageView
@@ -60,17 +67,19 @@
         android:layout_weight="1">
 
         <!-- Scrollable Content -->
-        <ScrollView
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/scrollPlanner"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fillViewport="true"
-            android:clipToPadding="false"
-            android:paddingBottom="80dp">
+            android:clipToPadding="false">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:clipToPadding="false"
+                android:paddingBottom="120dp">
 
                 <!-- Horizontal Date Strip -->
                 <HorizontalScrollView
@@ -191,11 +200,12 @@
                     android:padding="32dp"
                     android:visibility="gone">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📅"
-                        android:textSize="48sp"/>
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_calendar"
+                        app:tint="@color/text_tertiary"
+                        android:contentDescription="@string/planner_title" />
 
                     <TextView
                         android:id="@+id/tvEmptyTasksMessage"
@@ -209,7 +219,7 @@
                 </LinearLayout>
 
             </LinearLayout>
-        </ScrollView>
+        </androidx.core.widget.NestedScrollView>
 
         <!-- Floating Action Button -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -233,8 +243,9 @@
         android:background="@color/surface"
         app:menu="@menu/bottom_navigation_menu"
         app:labelVisibilityMode="labeled"
-        app:itemIconTint="@color/primary"
-        app:itemTextColor="@color/primary"
+        app:itemIconTint="@color/nav_item_selector"
+        app:itemTextColor="@color/nav_item_selector"
+        app:itemActiveIndicatorStyle="@style/Widget.Companion.BottomNavIndicator"
         app:elevation="8dp" />
 
 </LinearLayout>

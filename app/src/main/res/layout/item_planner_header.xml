@@ -13,7 +13,7 @@
         android:id="@+id/tvHeaderTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="⚡ Due Today"
+        tools:text="Due Today"
         android:textColor="@color/text_primary"
         android:textSize="18sp"
         android:textStyle="bold" />

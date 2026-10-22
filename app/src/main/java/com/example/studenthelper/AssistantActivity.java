@@ -67,7 +67,6 @@ public class AssistantActivity extends AppCompatActivity {
     private LinearLayout messagesContainer;
     private ScrollView scrollMessages;
     private MaterialButton btnSend;
-    private MaterialButton btnNewChat;
     private MaterialButton btnDrawerNewChat;
     private MaterialButton btnOpenDrawer;
     private MaterialButton btnCloseDrawer;
@@ -133,17 +132,6 @@ public class AssistantActivity extends AppCompatActivity {
         layoutNoNotes = findViewById(R.id.layoutNoNotes);
         rvNotesSelection = findViewById(R.id.rvNotesSelection);
 
-        MaterialButton btnGeneralChatOption = findViewById(R.id.btnGeneralChatOption);
-        if (btnGeneralChatOption != null) {
-            btnGeneralChatOption.setOnClickListener(v -> {
-                extraContext = null;
-                extraSubject = null;
-                extraNoteTitle = null;
-                extraNoteId = null;
-                startNewChat();
-            });
-        }
-
         MaterialButton btnGoToNotes = findViewById(R.id.btnGoToNotes);
         if (btnGoToNotes != null) {
             btnGoToNotes.setOnClickListener(v -> {
@@ -156,7 +144,6 @@ public class AssistantActivity extends AppCompatActivity {
         messagesContainer = findViewById(R.id.messagesContainer);
         scrollMessages = findViewById(R.id.scrollMessages);
         btnSend = findViewById(R.id.btnSend);
-        btnNewChat = findViewById(R.id.btnNewChat);
         btnDrawerNewChat = findViewById(R.id.btnDrawerNewChat);
         btnOpenDrawer = findViewById(R.id.btnOpenDrawer);
         btnCloseDrawer = findViewById(R.id.btnCloseDrawer);
@@ -182,10 +169,7 @@ public class AssistantActivity extends AppCompatActivity {
         // Setup Sessions RecyclerView
         setupSessionsRecyclerView();
 
-        // New Chat buttons: show note selector so user can pick which note/topic to chat about!
-        if (btnNewChat != null) {
-            btnNewChat.setOnClickListener(v -> showNoteSelector());
-        }
+        // New Chat button from side drawer: show note selector so user can pick which note/topic to chat about!
         if (btnDrawerNewChat != null) {
             btnDrawerNewChat.setOnClickListener(v -> {
                 if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -331,7 +315,7 @@ public class AssistantActivity extends AppCompatActivity {
 
             tvAssistantTitle.setText("AI Course Tutor");
             tvAssistantSubtitle.setText("Topic: " + titleDisplay + " (" + subjectDisplay + ")");
-            if (tvBannerGreeting != null) tvBannerGreeting.setText("🎯 Tutor: " + titleDisplay);
+            if (tvBannerGreeting != null) tvBannerGreeting.setText("Tutor: " + titleDisplay);
             if (tvBannerDesc != null) {
                 tvBannerDesc.setText("Strict tutor mode active for \"" + titleDisplay + "\". Questions and answers are strictly grounded in your notes.");
             }
@@ -341,7 +325,7 @@ public class AssistantActivity extends AppCompatActivity {
         } else {
             tvAssistantTitle.setText("AI Study Assistant");
             tvAssistantSubtitle.setText("Your learning companion");
-            if (tvBannerGreeting != null) tvBannerGreeting.setText("👋 Hey, learner!");
+            if (tvBannerGreeting != null) tvBannerGreeting.setText(getString(R.string.assistant_welcome));
             if (tvBannerDesc != null) {
                 tvBannerDesc.setText("Ask a question, simplify a difficult topic, or prepare for your exams.");
             }
@@ -583,12 +567,12 @@ public class AssistantActivity extends AppCompatActivity {
             batch.commit().addOnSuccessListener(aVoid -> {
                 Toast.makeText(AssistantActivity.this, "Chat deleted", Toast.LENGTH_SHORT).show();
 
-                sessionList.remove(session);
+                sessionList.removeIf(s -> s.getSessionId() != null && s.getSessionId().equals(session.getSessionId()));
+                chatSessionsAdapter.removeSession(session.getSessionId());
                 updateEmptySessionsState(sessionList.isEmpty());
-                chatSessionsAdapter.notifyDataSetChanged();
 
                 if (session.getSessionId().equals(currentSessionId)) {
-                    startNewChat();
+                    showNoteSelector();
                 }
             });
         }).addOnFailureListener(e -> {
@@ -832,7 +816,7 @@ public class AssistantActivity extends AppCompatActivity {
 
         messageView.setText(message);
         messageView.setTextSize(15);
-        messageView.setTextColor(isUser ? Color.WHITE : getResources().getColor(R.color.text_primary));
+        messageView.setTextColor(isUser ? Color.WHITE : getColor(R.color.text_primary));
 
         int paddingH = dp(16);
         int paddingV = dp(12);

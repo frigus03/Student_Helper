@@ -22,6 +22,7 @@ public class PlannerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         void onCompletionChanged(StudyTask task, boolean completed);
         void onAiBreakdown(StudyTask task);
         void onCalendarSync(StudyTask task);
+        void onDeleteTask(StudyTask task);
     }
 
     private final ArrayList<PlannerListItem> items = new ArrayList<>();
@@ -70,7 +71,9 @@ public class PlannerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             StudyTask task = taskItem.getTask();
             TaskViewHolder taskHolder = (TaskViewHolder) holder;
 
-            taskHolder.tvTitle.setText(task.getTitle() != null ? task.getTitle() : "Untitled Task");
+            String rawTitle = task.getTitle() != null ? task.getTitle() : "Untitled Task";
+            String cleanTitle = rawTitle.replaceAll("[^\\x00-\\x7F]", "").trim();
+            taskHolder.tvTitle.setText(cleanTitle.isEmpty() ? rawTitle : cleanTitle);
             taskHolder.tvSubject.setText(task.getSubject() != null ? task.getSubject() : "No Subject");
             taskHolder.tvCategory.setText(task.getCategory() != null ? task.getCategory() : "Study");
 
@@ -104,7 +107,7 @@ public class PlannerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             } else {
                 taskHolder.tvTitle.setPaintFlags(taskHolder.tvTitle.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
                 taskHolder.tvTitle.setTextColor(holder.itemView.getContext().getColor(R.color.text_primary));
-                String dueFormatted = "📅 " + timeStr + (task.getTime() != null && !task.getTime().isEmpty() ? " (" + task.getTime() + ")" : "") + " • ⏱️ " + task.getDurationMinutes() + " mins";
+                String dueFormatted = "Due: " + timeStr + (task.getTime() != null && !task.getTime().isEmpty() ? " (" + task.getTime() + ")" : "") + " • " + task.getDurationMinutes() + " mins";
                 taskHolder.tvTime.setText(dueFormatted);
             }
 
@@ -123,6 +126,10 @@ public class PlannerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     listener.onCompletionChanged(task, checked);
                 }
             });
+
+            if (taskHolder.btnDeleteTask != null) {
+                taskHolder.btnDeleteTask.setOnClickListener(v -> listener.onDeleteTask(task));
+            }
 
             taskHolder.btnCalendarSync.setOnClickListener(v -> listener.onCalendarSync(task));
             taskHolder.btnAiBreakdown.setOnClickListener(v -> listener.onAiBreakdown(task));
@@ -155,6 +162,7 @@ public class PlannerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         TextView tvCategory;
         View layoutTaskNotes;
         TextView tvTaskNotes;
+        View btnDeleteTask;
         View btnCalendarSync;
         View btnAiBreakdown;
 
@@ -169,6 +177,7 @@ public class PlannerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             tvCategory = itemView.findViewById(R.id.tvTaskCategory);
             layoutTaskNotes = itemView.findViewById(R.id.layoutTaskNotes);
             tvTaskNotes = itemView.findViewById(R.id.tvTaskNotes);
+            btnDeleteTask = itemView.findViewById(R.id.btnDeleteTask);
             btnCalendarSync = itemView.findViewById(R.id.btnCalendarSync);
             btnAiBreakdown = itemView.findViewById(R.id.btnAiBreakdown);
         }

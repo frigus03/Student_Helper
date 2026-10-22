@@ -1,3 +1,115 @@
 <resources>
     <string name="app_name">StudySphere AI</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_notes">Notes</string>
+    <string name="nav_planner">Planner</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Authentication -->
+    <string name="login_welcome">Welcome Back</string>
+    <string name="login_welcome_sub">Sign in to continue your learning journey</string>
+    <string name="email_hint">Email address</string>
+    <string name="password_hint">Password</string>
+    <string name="sign_in">Sign In</string>
+    <string name="dont_have_account">Don\'t have an account? Sign Up</string>
+
+    <!-- Home Dashboard -->
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+    <string name="student_default">Student</string>
+    <string name="personal_ai_tag">YOUR PERSONAL AI</string>
+    <string name="banner_headline">Study smarter, not harder.</string>
+    <string name="banner_description">Ask questions, simplify concepts, and prepare for your exams.</string>
+    <string name="btn_open_ai_assistant">Open AI Assistant</string>
+
+    <string name="overview_heading">Your overview</string>
+    <string name="overview_tasks_to_do">Tasks to do</string>
+    <string name="overview_tasks_remaining">Tasks remaining</string>
+    <string name="overview_tasks_completed">Tasks completed</string>
+    <string name="overview_study_time">Study time planned</string>
+    <string name="overview_study_time_today">Study time today</string>
+
+    <string name="quick_actions_heading">Quick actions</string>
+    <string name="quick_action_notes">My Notes</string>
+    <string name="quick_action_planner">Study Planner</string>
+    <string name="quick_action_quiz">Practice Quiz</string>
+
+    <string name="todays_study_plan_heading">Today\'s study plan</string>
+    <string name="plan_single_task_remaining">1 task remaining</string>
+    <string name="plan_multiple_tasks_remaining">%1$d tasks remaining</string>
+    <string name="plan_keep_going">Keep going! Complete your next study task.</string>
+    <string name="plan_all_caught_up">You\'re all caught up!</string>
+    <string name="plan_add_new">Add a new study task whenever you\'re ready.</string>
+    <string name="btn_open_study_planner">Open Study Planner</string>
+
+    <!-- Study Planner -->
+    <string name="planner_title">Study Planner</string>
+    <string name="btn_ai_plan">AI Plan</string>
+    <string name="btn_add_task">Add Task</string>
+    <string name="header_needs_attention">Needs Attention</string>
+    <string name="header_due_today">Due Today</string>
+    <string name="header_upcoming">Upcoming</string>
+    <string name="header_completed">Completed</string>
+    <string name="task_what_to_do">What to do:</string>
+    <string name="ai_breakdown">AI Breakdown</string>
+    <string name="btn_mark_complete">Mark Complete</string>
+    <string name="btn_completed">Completed</string>
+    <string name="badge_overdue">OVERDUE</string>
+
+    <!-- AI Planner Wizard -->
+    <string name="wizard_title">AI Exam Study Planner</string>
+    <string name="wizard_subtitle">Personalized, timetable-aware schedule with adaptive weak-point reinforcement</string>
+    <string name="wizard_step_1">1. Your Exam Timetable</string>
+    <string name="wizard_upload_timetable">Upload Exam Timetable (PDF or Image)</string>
+    <string name="wizard_timetable_hint">Or paste your exam schedule text:</string>
+    <string name="wizard_timetable_sample">e.g.,\n28 Oct 2026 - Cell Biology &amp; Signaling (10:00 AM)\n02 Nov 2026 - Molecular Genetics (02:00 PM)</string>
+    <string name="wizard_step_2">2. Syllabus Portion &amp; Uploaded Notes</string>
+    <string name="wizard_portion_sub">Select subjects for which you have uploaded notes/portion:</string>
+    <string name="wizard_step_3">3. How much at a time can you sit for studying?</string>
+    <string name="wizard_stamina_30">30 min (Bite-sized)</string>
+    <string name="wizard_stamina_45">45 min (Focused)</string>
+    <string name="wizard_stamina_60">60 min (Deep Dive)</string>
+    <string name="wizard_stamina_90">90 min (Intensive)</string>
+    <string name="wizard_step_4">4. Available study hours per day</string>
+    <string name="wizard_step_5">5. Quiz Performance &amp; Weak Concepts</string>
+    <string name="wizard_quiz_sub">Weak points detected from your practice quizzes will receive reinforced study sessions:</string>
+    <string name="wizard_adaptive_rule">Adaptive Rule: Sessions for weak topics are dynamically allocated more time, placed earlier in your calendar, and flagged with high priority.</string>
+    <string name="wizard_generating">Gemini is creating your schedule...</string>
+    <string name="wizard_btn_generate">Generate AI Calendar Schedule</string>
+
+    <!-- Notes -->
+    <string name="notes_title">My Notes</string>
+    <string name="notes_search_hint">Search notes...</string>
+    <string name="btn_ask_ai">Ask AI Tutor</string>
+    <string name="btn_practice_quiz">Adaptive Quiz</string>
+    <string name="btn_edit_note">Edit Note</string>
+    <string name="ai_revision_summary">AI Revision Summary (Gemini)</string>
+    <string name="btn_generate_summary">Generate AI Concise Summary</string>
+
+    <!-- Assistant -->
+    <string name="assistant_title">AI Study Companion</string>
+    <string name="assistant_welcome">Hey, learner!</string>
+    <string name="assistant_welcome_sub">I\'m your personal AI study companion. Choose a note to study or ask any academic question.</string>
+    <string name="btn_new_chat">Start New Chat</string>
+    <string name="chat_history">Chat History</string>
+    <string name="select_note_to_study">Select a Note to Study with AI</string>
+    <string name="general_chat">General Chat</string>
+    <string name="ask_question_hint">Ask a question about your notes...</string>
+
+    <!-- Quiz -->
+    <string name="quiz_title">Practice Quiz</string>
+    <string name="quiz_select_note">Pick a Study Note</string>
+    <string name="quiz_loading_weak">Reinforcing Weak Points...</string>
+    <string name="quiz_loading_adaptive">Generating Adaptive Quiz...</string>
+    <string name="quiz_subtitle_weak">Reinforcing Your Weak Points</string>
+    <string name="quiz_subtitle_general">Adaptive Practice Quiz</string>
+    <string name="quiz_correct">Correct!</string>
+    <string name="quiz_incorrect">Incorrect</string>
+    <string name="quiz_perfect">Perfect Mastery!</string>
+    <string name="quiz_needs_practice">Needs Practice</string>
+    <string name="quiz_video_lessons">RECOMMENDED VIDEO LESSONS</string>
+    <string name="btn_practice_weak_again">Practice Weak Points Again</string>
 </resources>

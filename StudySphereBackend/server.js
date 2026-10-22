@@ -323,7 +323,7 @@ app.post("/api/quiz/generate", async (req, res) => {
     let weakPointsDirective = "";
     if (Array.isArray(weakConcepts) && weakConcepts.length > 0) {
       weakPointsDirective =
-        `\n🎯 ADAPTIVE LEARNING FOCUS (CRITICAL):\n` +
+        `\nADAPTIVE LEARNING FOCUS (CRITICAL):\n` +
         `In previous quizzes, the student struggled with these specific concepts:\n` +
         weakConcepts.map(c => `- ${c}`).join("\n") + "\n" +
         `Prioritize generating questions that specifically test, explain, and reinforce these weak concepts to close their learning gaps.\n`;
@@ -415,9 +415,12 @@ app.post("/api/planner/generate", async (req, res) => {
       weakSubjects
     } = req.body;
 
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = (req.body.clientDate && /^\d{4}-\d{2}-\d{2}$/.test(req.body.clientDate))
+      ? req.body.clientDate
+      : new Date().toISOString().split("T")[0];
     const hours = Number(availableHoursPerDay) || 2;
     const stamina = Number(sessionDurationMinutes) || 45;
+    const maxSessionsPerDay = Math.max(1, Math.floor((hours * 60) / stamina));
     const timetableText = examTimetable || targetExamDate || "Exams starting in 14 days";
 
     // Format uploaded notes summary
@@ -452,27 +455,32 @@ STUDENT INPUTS:
 ${timetableText}
 
 2. Study Stamina & Availability:
-- Max continuous sitting duration: ${stamina} minutes per session. (Every session MUST fit the student's stamina of ${stamina} minutes, or a multiple with short breaks).
-- Daily study capacity: ${hours} hours per day.
+- Max continuous sitting duration: ${stamina} minutes per session. (Every session MUST fit the student's stamina of ${stamina} minutes).
+- Daily study capacity: ${hours} hours per day (allows at most ${maxSessionsPerDay} session(s) per calendar day).
 
 3. Notes & Syllabus Portion Status:
-- All portion uploaded in notes?: ${allPortionUploaded === false ? "NO - Some portions are missing (Schedule extra self-study, textbook reading, and note synthesis sessions for unuploaded portions)." : "YES - All portions uploaded in notes."}
+- All portion uploaded in notes?: ${allPortionUploaded === false ? "NO - Some portions are missing (Schedule extra self-study, textbook reading, and note synthesis sessions for unuploaded portions across the days)." : "YES - All portions uploaded in notes."}
 - Uploaded Notes in App: ${notesSummary}
 
 4. Quiz Results & Diagnostic Weak Points:
 - Identified Weak Concepts from Quizzes: ${weakList}
 - Subject Mastery Scores: ${masteryText}
 
-ADAPTIVE SCHEDULING RULES:
-1. EXAM TIMETABLE PACING: Parse all subjects and exam dates. Work backwards from the earliest exam to the latest.
-2. DYNAMIC TIME ALLOCATION:
-   - For subjects with low quiz mastery (< 60%) or identified WEAK CONCEPTS, dynamically allocate more frequent study sessions and assign HIGH priority.
-   - For strong subjects, schedule high-yield spaced review sessions.
+CRITICAL MULTI-DAY PACING AND DISTRIBUTION RULES (MANDATORY):
+1. MULTI-DAY SPREAD (DO NOT PUT ALL TASKS IN ONE DAY):
+   - You MUST spread the tasks across multiple distinct days starting from ${todayStr} up to the exam dates!
+   - Under NO CIRCUMSTANCES should all or most tasks be scheduled on the same date.
+   - Schedule at most ${maxSessionsPerDay} session(s) per calendar day to avoid student burnout and respect their daily capacity of ${hours} hours.
+   - For example: Day 1 (${todayStr}) gets 1 session, Day 2 gets 1 session, Day 3 gets 1-2 sessions, Day 4 gets 1 session, continuing sequentially up to the exam date.
+2. ADAPTIVE CONTENT PACING:
+   - Calculate how much content is left to study and how many days are left until each exam.
+   - Prioritize weak concepts early in the schedule (${weakList}) so the student masters them first, followed by revision closer to the exam.
+   - If syllabus portions are missing, distribute self-study and note-taking sessions across the days.
 3. TITLE, WHEN TO DO, AND WHAT TO DO:
    - Each session must have:
-     * "title": Actionable and motivating (e.g. "🎯 Deep Dive: Cell Signaling Cascades", "📖 Core Revision: Thermodynamics", "⚡ Active Recall & Practice Quiz")
+     * "title": Actionable and motivating (e.g. "Deep Dive: Cell Signaling Cascades", "Core Revision: Thermodynamics", "Active Recall & Practice Quiz"). CRITICAL: DO NOT use any emojis in titles, notes, or summary.
      * "subject": Subject name
-     * "date": "YYYY-MM-DD" (strictly on or after ${todayStr} up to the exam date)
+     * "date": "YYYY-MM-DD" (strictly on or after ${todayStr}, spread out across consecutive days up to the exam date)
      * "time": "HH:MM" (realistic time of day e.g. "09:00", "14:00", "17:30", "19:00")
      * "durationMinutes": ${stamina}
      * "priority": "HIGH" (for weak concepts or imminent exams) or "MEDIUM" / "LOW"
@@ -480,9 +488,9 @@ ADAPTIVE SCHEDULING RULES:
      * "notes": Detailed "WHAT TO DO" instructions (step-by-step concepts to review, diagrams to draw, or formulas to practice).
 
 OUTPUT FORMAT:
-Return a JSON object with this exact structure:
+Return a JSON object with this exact structure (NO EMOJIS anywhere):
 {
-  "summary": "Short 2-sentence motivating overview of the timetable strategy, highlighting focus on weak concepts.",
+  "summary": "Short 2-sentence motivating overview of the timetable strategy, highlighting the multi-day pacing and focus on weak concepts.",
   "tasks": [
     {
       "title": "...",
@@ -496,7 +504,7 @@ Return a JSON object with this exact structure:
     }
   ]
 }
-Generate between 6 to 12 prioritized calendar tasks. Return ONLY valid JSON, do not wrap in markdown or backticks.`;
+Generate between 6 to 12 prioritized calendar tasks spread across the days leading up to the exam. Return ONLY valid JSON, do not wrap in markdown or backticks.`;
 
     const systemInstruction =
       "You are a master academic time-management planner who builds personalized study schedules.";

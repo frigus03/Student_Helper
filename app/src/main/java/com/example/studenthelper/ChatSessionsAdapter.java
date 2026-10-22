@@ -42,6 +42,17 @@ public class ChatSessionsAdapter extends RecyclerView.Adapter<ChatSessionsAdapte
         notifyDataSetChanged();
     }
 
+    public void removeSession(String sessionId) {
+        if (sessionId == null) return;
+        for (int i = 0; i < sessions.size(); i++) {
+            if (sessionId.equals(sessions.get(i).getSessionId())) {
+                sessions.remove(i);
+                notifyItemRemoved(i);
+                break;
+            }
+        }
+    }
+
     @NonNull
     @Override
     public SessionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {

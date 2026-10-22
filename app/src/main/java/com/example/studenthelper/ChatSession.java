@@ -81,4 +81,18 @@ public class ChatSession {
     public void setContext(String context) {
         this.context = context;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChatSession that = (ChatSession) o;
+        return sessionId != null ? sessionId.equals(that.sessionId) : that.sessionId == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return sessionId != null ? sessionId.hashCode() : 0;
+    }
 }
+

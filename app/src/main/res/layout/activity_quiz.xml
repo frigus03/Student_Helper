@@ -99,7 +99,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="📚 Pick a Study Note"
+                            android:text="@string/quiz_select_note"
                             android:textColor="@color/primary"
                             android:textSize="18sp"
                             android:textStyle="bold" />
@@ -146,11 +146,12 @@
                     android:paddingBottom="36dp"
                     android:visibility="gone">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📝"
-                        android:textSize="44sp" />
+                    <ImageView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:src="@drawable/ic_notes"
+                        app:tint="@color/text_tertiary"
+                        android:contentDescription="@string/quiz_select_note" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -388,12 +389,13 @@
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp">
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:text="🏆"
-                        android:textSize="44sp"/>
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_quiz"
+                        app:tint="@color/primary"
+                        android:contentDescription="Quiz Result" />
 
                 </com.google.android.material.card.MaterialCardView>
 
@@ -508,11 +510,12 @@
                                 android:gravity="center_vertical"
                                 android:orientation="horizontal">
 
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="🎯"
-                                    android:textSize="22sp" />
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:src="@drawable/ic_quiz"
+                                    app:tint="@color/primary"
+                                    android:contentDescription="Adaptive Insights" />
 
                                 <LinearLayout
                                     android:layout_width="0dp"
@@ -561,7 +564,7 @@
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="🎬 RECOMMENDED VIDEO LESSONS"
+                                android:text="@string/quiz_video_lessons"
                                 android:textColor="@color/primary"
                                 android:textSize="11sp"
                                 android:textStyle="bold"
@@ -595,7 +598,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="54dp"
                     android:layout_marginTop="22dp"
-                    android:text="🎯 Practice Weak Points Again"
+                    android:text="@string/btn_practice_weak_again"
                     android:textAllCaps="false"
                     android:textStyle="bold"
                     android:textColor="@color/white"

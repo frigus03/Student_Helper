@@ -33,9 +33,9 @@
                 android:layout_height="44dp"
                 android:minWidth="0dp"
                 android:padding="0dp"
-                android:text="☰"
-                android:textSize="22sp"
-                android:textColor="@color/text_primary"
+                app:icon="@drawable/ic_menu"
+                app:iconTint="@color/text_primary"
+                app:iconGravity="textStart"
                 android:textAllCaps="false"
                 android:contentDescription="Chat History"
                 app:backgroundTint="@color/surface"
@@ -76,24 +76,6 @@
                     android:ellipsize="end" />
 
             </LinearLayout>
-
-            <!-- New Chat button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnNewChat"
-                android:layout_width="wrap_content"
-                android:layout_height="42dp"
-                android:minWidth="0dp"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:text="+ New"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:textColor="@color/primary"
-                android:textAllCaps="false"
-                android:contentDescription="Start new chat"
-                app:backgroundTint="@color/primary_light"
-                app:cornerRadius="12dp"
-                app:elevation="0dp" />
 
             <!-- Back to dashboard/notes button -->
             <com.google.android.material.button.MaterialButton
@@ -154,7 +136,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="📚 Select a Note to Study with AI"
+                            android:text="@string/select_note_to_study"
                             android:textColor="@color/primary"
                             android:textSize="18sp"
                             android:textStyle="bold" />
@@ -163,7 +145,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
-                            android:text="Select any of your uploaded notes to activate an AI Tutor strictly grounded in your course materials, or switch to general chat below:"
+                            android:text="Select any of your uploaded notes to activate an AI Tutor strictly grounded in your course materials:"
                             android:textColor="@color/text_primary"
                             android:textSize="13sp"
                             android:lineSpacingExtra="3dp" />
@@ -172,35 +154,16 @@
 
                 </com.google.android.material.card.MaterialCardView>
 
-                <LinearLayout
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="18dp"
                     android:layout_marginBottom="10dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="YOUR UPLOADED NOTES"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.08" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnGeneralChatOption"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:text="General Chat ➔"
-                        android:textSize="12sp"
-                        android:textColor="@color/primary"
-                        android:textAllCaps="false" />
-
-                </LinearLayout>
+                    android:text="YOUR UPLOADED NOTES"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08" />
 
                 <!-- RecyclerView for picking a note -->
                 <androidx.recyclerview.widget.RecyclerView
@@ -220,11 +183,12 @@
                     android:paddingBottom="36dp"
                     android:visibility="gone">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📝"
-                        android:textSize="44sp" />
+                    <ImageView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:src="@drawable/ic_notes"
+                        app:tint="@color/text_tertiary"
+                        android:contentDescription="@string/notes_title" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -240,7 +204,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:gravity="center"
-                        android:text="Upload your notes first to get grounded AI tutoring, or start a general chat!"
+                        android:text="Upload your notes first to get grounded AI tutoring."
                         android:textColor="@color/text_secondary"
                         android:textSize="14sp" />
 
@@ -285,7 +249,7 @@
                     android:id="@+id/tvBannerGreeting"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="👋 Hey, learner!"
+                    android:text="@string/assistant_welcome"
                     android:textColor="@color/primary"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -380,9 +344,10 @@
                     android:layout_height="54dp"
                     android:layout_marginStart="8dp"
                     android:minWidth="0dp"
-                    android:text="➤"
-                    android:textSize="20sp"
-                    android:textColor="@color/white"
+                    android:padding="0dp"
+                    app:icon="@android:drawable/ic_menu_send"
+                    app:iconTint="@color/white"
+                    app:iconGravity="textStart"
                     android:textAllCaps="false"
                     android:contentDescription="Send question"
                     app:backgroundTint="@color/primary"
@@ -423,7 +388,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="💬 Chat History"
+                android:text="@string/chat_history"
                 android:textColor="@color/text_primary"
                 android:textSize="19sp"
                 android:textStyle="bold" />
@@ -434,9 +399,9 @@
                 android:layout_height="36dp"
                 android:minWidth="0dp"
                 android:padding="0dp"
-                android:text="✕"
-                android:textSize="16sp"
-                android:textColor="@color/text_secondary"
+                app:icon="@drawable/ic_close"
+                app:iconTint="@color/text_secondary"
+                app:iconGravity="textStart"
                 android:textAllCaps="false"
                 android:contentDescription="Close History"
                 app:backgroundTint="@color/background"
@@ -452,7 +417,7 @@
             android:layout_height="48dp"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="12dp"
-            android:text="➕ Start New Chat"
+            android:text="@string/btn_new_chat"
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@color/white"

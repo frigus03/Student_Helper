@@ -62,7 +62,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
 
         String preview = note.getContent();
         if (note.getFileName() != null && !note.getFileName().isEmpty()) {
-            preview = "📎 " + note.getFileName() + (preview != null && !preview.isEmpty() ? "\n" + preview : "");
+            preview = "File: " + note.getFileName() + (preview != null && !preview.isEmpty() ? "\n" + preview : "");
         }
         holder.tvPreview.setText(preview);
 

@@ -53,16 +53,33 @@
                     android:paddingStart="4dp"
                     android:paddingTop="12dp">
 
-                    <TextView
-                        android:id="@+id/tvTaskTitle"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        tools:text="Revise Machine Learning"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:maxLines="2"
-                        android:ellipsize="end" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tvTaskTitle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            tools:text="Revise Machine Learning"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:maxLines="2"
+                            android:ellipsize="end" />
+
+                        <ImageButton
+                            android:id="@+id/btnDeleteTask"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Delete study task"
+                            android:src="@android:drawable/ic_menu_delete"
+                            app:tint="@color/text_tertiary" />
+                    </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -73,11 +90,13 @@
 
                         <TextView
                             android:id="@+id/tvTaskTime"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_weight="1"
                             tools:text="Due Today, 6:00 PM • 45 mins"
                             android:textColor="@color/text_secondary"
-                            android:textSize="13sp" />
+                            android:textSize="13sp"
+                            android:maxLines="2" />
 
                         <TextView
                             android:id="@+id/tvOverdueBadge"
@@ -86,12 +105,14 @@
                             android:layout_marginStart="8dp"
                             android:background="@drawable/bg_badge_primary_light"
                             android:backgroundTint="@color/error_light"
-                            android:paddingHorizontal="6dp"
-                            android:paddingVertical="2dp"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="3dp"
                             android:text="Overdue"
                             android:textColor="@color/error"
                             android:textSize="11sp"
                             android:textStyle="bold"
+                            android:singleLine="true"
+                            android:lines="1"
                             android:visibility="gone" />
                     </LinearLayout>
 
@@ -143,7 +164,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="📝 What to do:"
+                            android:text="@string/task_what_to_do"
                             android:textColor="@color/primary"
                             android:textSize="11sp"
                             android:textStyle="bold" />
@@ -181,10 +202,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:minHeight="48dp"
-                    android:text="Sync"
-                    app:icon="@android:drawable/ic_menu_my_calendar"
-                    android:textColor="@color/text_secondary"
-                    app:iconTint="@color/text_secondary" />
+                    android:text="Google Calendar"
+                    app:icon="@drawable/ic_calendar"
+                    android:textColor="@color/primary"
+                    app:iconTint="@color/primary" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnAiBreakdown"
@@ -193,7 +214,7 @@
                     android:layout_height="wrap_content"
                     android:minHeight="48dp"
                     android:layout_marginStart="8dp"
-                    android:text="AI Breakdown ✨"
+                    android:text="@string/ai_breakdown"
                     android:textColor="@color/primary" />
             </LinearLayout>
 
