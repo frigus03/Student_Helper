@@ -188,11 +188,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
         MaterialButton btnOpenAssistant = findViewById(R.id.btnOpenAssistant);
+        MaterialButton btnOpenPlanner = findViewById(R.id.btnOpenPlanner);
         MaterialCardView cardNotes = findViewById(R.id.cardNotes);
         MaterialCardView cardPlanner = findViewById(R.id.cardPlanner);
         MaterialCardView cardQuiz = findViewById(R.id.cardQuiz);
 
         btnOpenAssistant.setOnClickListener(v -> openAssistant());
+        btnOpenPlanner.setOnClickListener(v -> openPlanner());
         cardNotes.setOnClickListener(v -> openNotes());
         cardPlanner.setOnClickListener(v -> openPlanner());
         cardQuiz.setOnClickListener(v -> openQuiz());

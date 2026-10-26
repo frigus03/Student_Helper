@@ -372,7 +372,7 @@ public class NotesActivity extends AppCompatActivity {
         aiSummaryCard.addView(btnGenerateSummary, btnGenParams);
 
         if (note.getAiSummary() != null && !note.getAiSummary().trim().isEmpty()) {
-            tvSummaryContent.setText(note.getAiSummary().trim());
+            tvSummaryContent.setText(MarkdownTextFormatter.format(note.getAiSummary()));
         } else {
             tvSummaryContent.setText("Generating concise revision summary with Gemini...");
             requestNoteSummary(note, tvSummaryContent, btnGenerateSummary);
@@ -443,8 +443,18 @@ public class NotesActivity extends AppCompatActivity {
 
         String fileUrl = note.getFileUrl();
         try {
+            String fileName = note.getFileName() == null ? fileUrl : note.getFileName();
+            if (fileName.toLowerCase(Locale.ROOT).endsWith(".pdf")
+                    || fileUrl.toLowerCase(Locale.ROOT).contains(".pdf")) {
+                Intent pdfIntent = new Intent(this, PdfViewerActivity.class);
+                pdfIntent.putExtra(PdfViewerActivity.EXTRA_SOURCE, fileUrl);
+                pdfIntent.putExtra(PdfViewerActivity.EXTRA_TITLE, fileName);
+                startActivity(pdfIntent);
+                return;
+            }
             if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(fileUrl));
+                browserIntent.setDataAndType(Uri.parse(fileUrl), getMimeType(fileName));
                 startActivity(browserIntent);
             } else {
                 File file = new File(fileUrl);
@@ -463,8 +473,15 @@ public class NotesActivity extends AppCompatActivity {
                 }
             }
         } catch (Exception e) {
-            Toast.makeText(this, "Opening material: " + note.getFileName(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No app could open this material", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private String getMimeType(String fileName) {
+        String lowerName = fileName == null ? "" : fileName.toLowerCase(Locale.ROOT);
+        if (lowerName.endsWith(".txt")) return "text/plain";
+        if (lowerName.endsWith(".md")) return "text/markdown";
+        return "application/octet-stream";
     }
 
     private void requestNoteSummary(Note note, TextView tvSummary, View btnGenerate) {
@@ -522,7 +539,7 @@ public class NotesActivity extends AppCompatActivity {
                         }
 
                         runOnUiThread(() -> {
-                            tvSummary.setText(summary);
+                            tvSummary.setText(MarkdownTextFormatter.format(summary));
                             if (btnGenerate != null) btnGenerate.setVisibility(View.GONE);
                         });
                         return;

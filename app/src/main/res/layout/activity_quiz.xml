@@ -25,14 +25,15 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:minWidth="0dp"
-            android:text="‹"
-            android:textSize="30sp"
-            android:textColor="@color/text_primary"
-            android:textAllCaps="false"
+            android:minHeight="48dp"
             android:contentDescription="Go back"
             app:backgroundTint="@color/surface"
             app:cornerRadius="14dp"
-            app:elevation="0dp"/>
+            app:elevation="0dp"
+            app:icon="@drawable/ic_arrow_back"
+            app:iconTint="@color/text_primary"
+            android:insetTop="0dp"
+            android:insetBottom="0dp" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -285,10 +286,10 @@
                     android:paddingEnd="16dp"
                     android:layout_marginBottom="10dp"
                     tools:text="A. Option one"
-                    android:textColor="#28243D"
+                    android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:textAllCaps="false"
-                    app:backgroundTint="#F1F0FA"
+                    app:backgroundTint="@color/primary_light"
                     app:cornerRadius="16dp"
                     app:elevation="0dp"/>
 
@@ -303,10 +304,10 @@
                     android:paddingEnd="16dp"
                     android:layout_marginBottom="10dp"
                     tools:text="B. Option two"
-                    android:textColor="#28243D"
+                    android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:textAllCaps="false"
-                    app:backgroundTint="#F1F0FA"
+                    app:backgroundTint="@color/primary_light"
                     app:cornerRadius="16dp"
                     app:elevation="0dp"/>
 
@@ -321,10 +322,10 @@
                     android:paddingEnd="16dp"
                     android:layout_marginBottom="10dp"
                     tools:text="C. Option three"
-                    android:textColor="#28243D"
+                    android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:textAllCaps="false"
-                    app:backgroundTint="#F1F0FA"
+                    app:backgroundTint="@color/primary_light"
                     app:cornerRadius="16dp"
                     app:elevation="0dp"/>
 
@@ -339,10 +340,10 @@
                     android:paddingEnd="16dp"
                     android:layout_marginBottom="10dp"
                     tools:text="D. Option four"
-                    android:textColor="#28243D"
+                    android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:textAllCaps="false"
-                    app:backgroundTint="#F1F0FA"
+                    app:backgroundTint="@color/primary_light"
                     app:cornerRadius="16dp"
                     app:elevation="0dp"/>
 

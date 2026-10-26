@@ -685,7 +685,7 @@ public class AssistantActivity extends AppCompatActivity {
                     return;
                 }
 
-                replyView.setText(finalResult);
+                replyView.setText(MarkdownTextFormatter.format(finalResult));
                 btnSend.setEnabled(true);
                 isWaitingForResponse = false;
                 scrollToBottom();
@@ -814,7 +814,7 @@ public class AssistantActivity extends AppCompatActivity {
     private TextView addMessageView(String message, boolean isUser) {
         TextView messageView = new TextView(this);
 
-        messageView.setText(message);
+        messageView.setText(isUser ? message : MarkdownTextFormatter.format(message));
         messageView.setTextSize(15);
         messageView.setTextColor(isUser ? Color.WHITE : getColor(R.color.text_primary));
 

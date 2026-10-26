@@ -219,10 +219,12 @@ app.post("/api/chat", async (req, res) => {
         `3. If the student asks anything off-topic, unrelated, sidetracked, or non-academic (e.g. general chit-chat, pop culture, sports, unrelated hobbies, personal advice, or unrelated subjects), YOU MUST POLITELY REFUSE AND RE-FOCUS:\n` +
         `   "I'm your dedicated AI study companion for ${subject}. Let's stay focused on your coursework! What question do you have about this material?"\n` +
         `4. Keep your answers clear, academic, encouraging, and structured with step-by-step explanations or bullet points.\n` +
-        `5. Always explain in your own original words, intuitive analogies, and step-by-step reasoning.`;
+        `5. Always explain in your own original words, intuitive analogies, and step-by-step reasoning.\n` +
+        `6. Format for a phone screen: use short headings, simple bullet lists, and bold key terms. Write formulas in readable inline math such as $profit = max(S_T - K, 0) - premium$; avoid raw LaTeX environments, backslash commands, and decorative Markdown markers.`;
     } else {
       systemInstruction =
-        `You are an AI study companion named StudySphere. You strictly assist students with academic learning, courses, and exam prep. Remember previous questions in this conversation for seamless follow-ups. Politely decline any non-academic or frivolous queries. Always explain in your own original words, intuitive analogies, and structured explanations.`;
+        `You are an AI study companion named StudySphere. You strictly assist students with academic learning, courses, and exam prep. Remember previous questions in this conversation for seamless follow-ups. Politely decline any non-academic or frivolous queries. Always explain in your own original words, intuitive analogies, and structured explanations. ` +
+        `Format for a phone screen: use short headings, simple bullet lists, and bold key terms. Write formulas in readable inline math such as $profit = max(S_T - K, 0) - premium$; avoid raw LaTeX environments, backslash commands, and decorative Markdown markers.`;
     }
 
     // Build multi-turn contents from previous history

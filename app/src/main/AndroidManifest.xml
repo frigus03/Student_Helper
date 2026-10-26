@@ -38,6 +38,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".PdfViewerActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".NotesActivity"
             android:exported="false" />
 

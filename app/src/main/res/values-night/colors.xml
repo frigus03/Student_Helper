@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#7565E6</color>
+    <color name="primary_dark">#D0C8FF</color>
+    <color name="primary_light">#302D49</color>
+    <color name="secondary">#C2B8FF</color>
+    <color name="background">#11121B</color>
+    <color name="surface">#1B1C28</color>
+    <color name="surface_card">#202130</color>
+    <color name="banner_bg">#29263D</color>
+    <color name="text_primary">#F2F0FF</color>
+    <color name="text_secondary">#B8B6CC</color>
+    <color name="text_tertiary">#89879F</color>
+    <color name="border">#39394D</color>
+    <color name="border_focus">#B6AAFF</color>
+    <color name="success">#63D6A2</color>
+    <color name="success_light">#18372D</color>
+    <color name="warning">#F4B85F</color>
+    <color name="warning_light">#3A2D1A</color>
+    <color name="error">#FF8A80</color>
+    <color name="error_light">#422321</color>
+    <color name="blue_light">#202E46</color>
+    <color name="pink_light">#3D2638</color>
+    <color name="priority_high">#FF8A80</color>
+    <color name="priority_medium">#F4B85F</color>
+    <color name="priority_low">#63D6A2</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+</resources>

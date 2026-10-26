@@ -134,12 +134,12 @@ public class QuizActivity extends AppCompatActivity {
     private ClipboardManager.OnPrimaryClipChangedListener clipListener;
     private boolean isUpdatingClip = false;
 
-    private final int defaultButtonColor = Color.parseColor("#F1F0FA");
-    private final int defaultTextColor = Color.parseColor("#28243D");
-    private final int correctColor = Color.parseColor("#D9F5E5");
-    private final int correctTextColor = Color.parseColor("#176B3A");
-    private final int wrongColor = Color.parseColor("#FFE1E1");
-    private final int wrongTextColor = Color.parseColor("#B42318");
+    private int defaultButtonColor;
+    private int defaultTextColor;
+    private int correctColor;
+    private int correctTextColor;
+    private int wrongColor;
+    private int wrongTextColor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,6 +152,13 @@ public class QuizActivity extends AppCompatActivity {
         );
 
         setContentView(R.layout.activity_quiz);
+
+        defaultButtonColor = getColor(R.color.primary_light);
+        defaultTextColor = getColor(R.color.text_primary);
+        correctColor = getColor(R.color.success_light);
+        correctTextColor = getColor(R.color.success);
+        wrongColor = getColor(R.color.error_light);
+        wrongTextColor = getColor(R.color.error);
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
