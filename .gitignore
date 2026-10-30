@@ -21,5 +21,8 @@ StudySphereBackend/.env
 StudySphereBackend/node_modules/
 StudySphereBackend/uploads/
 app/google-services.json
+*.apk
+StudySphere-debug.apk
+app_screenshots/
 stitch_ai_student_companion_ui_ux_redesign/
 

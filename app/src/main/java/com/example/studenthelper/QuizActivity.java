@@ -59,8 +59,10 @@ public class QuizActivity extends AppCompatActivity {
     public static final String EXTRA_MATERIAL = "extra_material";
     public static final String EXTRA_NOTE_TITLE = "extra_note_title";
     public static final String EXTRA_NOTE_ID = "extra_note_id";
+    public static final String EXTRA_FILE_URL = "extra_file_url";
+    public static final String EXTRA_AI_SUMMARY = "extra_ai_summary";
 
-    private static final String QUIZ_API_URL = "http://10.0.2.2:3000/api/quiz/generate";
+    private static final String QUIZ_API_URL = AppConfig.BACKEND_BASE_URL + "/api/quiz/generate";
     private static final String PREFS_NAME = "StudySphereAdaptiveQuiz";
 
     // Anti-Cheating AI Trap Constants
@@ -122,6 +124,7 @@ public class QuizActivity extends AppCompatActivity {
 
     private String currentSubject = "";
     private String currentMaterial = "";
+    private String currentFileUrl = "";
     private String currentNoteTitle = "";
     private String currentNoteId = "";
     private float currentMastery = 0.5f;
@@ -129,6 +132,7 @@ public class QuizActivity extends AppCompatActivity {
     private int currentQuestionIndex = 0;
     private int score = 0;
     private boolean answerSelected = false;
+    private boolean isFallbackQuiz = false;
 
     // Clipboard listener to intercept copying
     private ClipboardManager.OnPrimaryClipChangedListener clipListener;
@@ -169,6 +173,15 @@ public class QuizActivity extends AppCompatActivity {
         if (getIntent().hasExtra(EXTRA_MATERIAL)) {
             currentMaterial = getIntent().getStringExtra(EXTRA_MATERIAL);
         }
+        if (getIntent().hasExtra(EXTRA_FILE_URL)) {
+            currentFileUrl = getIntent().getStringExtra(EXTRA_FILE_URL);
+        }
+        if (getIntent().hasExtra(EXTRA_AI_SUMMARY)) {
+            String summary = getIntent().getStringExtra(EXTRA_AI_SUMMARY);
+            if ((currentMaterial == null || currentMaterial.trim().isEmpty()) && summary != null && !summary.trim().isEmpty()) {
+                currentMaterial = summary;
+            }
+        }
         if (getIntent().hasExtra(EXTRA_NOTE_TITLE)) {
             currentNoteTitle = getIntent().getStringExtra(EXTRA_NOTE_TITLE);
         }
@@ -179,8 +192,10 @@ public class QuizActivity extends AppCompatActivity {
         initializeViews();
         setupListeners();
 
-        // If launched without notes/material, show note selector so quizzes are always grounded in notes!
-        if (currentMaterial == null || currentMaterial.trim().isEmpty()) {
+        // If launched without notes/material/file, show note selector so quizzes are always grounded in notes!
+        boolean hasContext = (currentMaterial != null && !currentMaterial.trim().isEmpty()) ||
+                (currentFileUrl != null && !currentFileUrl.trim().isEmpty());
+        if (!hasContext) {
             showNoteSelector();
         } else {
             startAdaptiveQuiz(false);
@@ -474,7 +489,12 @@ public class QuizActivity extends AppCompatActivity {
 
     private void selectNoteForQuiz(Note note) {
         currentSubject = note.getSubject() != null ? note.getSubject() : "Course Material";
-        currentMaterial = note.getContent() != null ? note.getContent() : "";
+        String content = note.getContent() != null ? note.getContent().trim() : "";
+        if (content.isEmpty() && note.getAiSummary() != null && !note.getAiSummary().trim().isEmpty()) {
+            content = note.getAiSummary().trim();
+        }
+        currentMaterial = content;
+        currentFileUrl = note.getFileUrl() != null ? note.getFileUrl().trim() : "";
         currentNoteTitle = note.getTitle() != null ? note.getTitle() : currentSubject;
         currentNoteId = note.getId() != null ? note.getId() : "";
 
@@ -509,12 +529,14 @@ public class QuizActivity extends AppCompatActivity {
         tvQuizTitle.setText(titleDisplay);
         tvQuizSubtitle.setText(focusOnWeakPoints ? getString(R.string.quiz_subtitle_weak) : getString(R.string.quiz_subtitle_general));
 
-        // Retrieve saved weak concepts for this note / subject
+        // Only send targeted weak concepts if the user specifically asked to practice weak spots
         List<String> weakConceptsToSend = new ArrayList<>();
         if (focusOnWeakPoints) {
-            weakConceptsToSend.addAll(currentWeakConcepts);
-        } else {
-            weakConceptsToSend.addAll(loadStoredWeakConcepts());
+            if (!currentWeakConcepts.isEmpty()) {
+                weakConceptsToSend.addAll(currentWeakConcepts);
+            } else {
+                weakConceptsToSend.addAll(loadStoredWeakConcepts());
+            }
         }
 
         requestAdaptiveQuizFromBackend(weakConceptsToSend);
@@ -548,8 +570,15 @@ public class QuizActivity extends AppCompatActivity {
         String savedJson = prefs.getString(key, "[]");
         try {
             JSONArray arr = new JSONArray(savedJson);
+            String subLower = (currentSubject + " " + currentNoteTitle).toLowerCase();
+            boolean isPhysics = subLower.contains("physics") || subLower.contains("mechanic") || subLower.contains("motion");
             for (int i = 0; i < arr.length(); i++) {
-                list.add(arr.getString(i));
+                String c = arr.getString(i);
+                // Purge fallback physics concepts if current topic is not physics
+                if (!isPhysics && (c.contains("Newton") || c.contains("Inertia") || c.contains("F = ma"))) {
+                    continue;
+                }
+                list.add(c);
             }
         } catch (Exception ignored) {}
         return list;
@@ -572,6 +601,9 @@ public class QuizActivity extends AppCompatActivity {
                 JSONObject requestBody = new JSONObject();
                 requestBody.put("subject", currentSubject);
                 requestBody.put("material", currentMaterial);
+                if (currentFileUrl != null && !currentFileUrl.isEmpty()) {
+                    requestBody.put("fileUrl", currentFileUrl);
+                }
                 requestBody.put("title", currentNoteTitle);
                 requestBody.put("masteryLevel", currentMastery);
                 requestBody.put("count", 5);
@@ -586,6 +618,7 @@ public class QuizActivity extends AppCompatActivity {
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+                conn.setRequestProperty(AppConfig.APP_TOKEN_HEADER, AppConfig.APP_TOKEN_VALUE);
                 conn.setConnectTimeout(15000);
                 conn.setReadTimeout(50000);
                 conn.setDoOutput(true);
@@ -637,6 +670,7 @@ public class QuizActivity extends AppCompatActivity {
                         }
 
                         if (!parsed.isEmpty()) {
+                            isFallbackQuiz = false;
                             runOnUiThread(() -> {
                                 questions.clear();
                                 questions.addAll(parsed);
@@ -662,6 +696,7 @@ public class QuizActivity extends AppCompatActivity {
     }
 
     private void createNoteBasedFallback() {
+        isFallbackQuiz = true;
         questions.clear();
         missedQuestions.clear();
 
@@ -862,8 +897,10 @@ public class QuizActivity extends AppCompatActivity {
             }
         }
 
-        // Persist weak concepts to SharedPreferences for future adaptive quizzes
-        saveStoredWeakConcepts(currentWeakConcepts);
+        // Persist weak concepts to SharedPreferences for future adaptive quizzes (ONLY if real AI quiz, not offline fallback)
+        if (!isFallbackQuiz) {
+            saveStoredWeakConcepts(currentWeakConcepts);
+        }
 
         if (percentage == 100) {
             tvResultTitle.setText(getString(R.string.quiz_perfect));

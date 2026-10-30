@@ -74,8 +74,8 @@ import java.util.concurrent.Executors;
 
 public class PlannerActivity extends AppCompatActivity {
 
-    private static final String PLANNER_API_URL = "http://10.0.2.2:3000/api/planner/generate";
-    private static final String PARSE_TIMETABLE_API_URL = "http://10.0.2.2:3000/api/planner/parse-timetable";
+    private static final String PLANNER_API_URL = AppConfig.BACKEND_BASE_URL + "/api/planner/generate";
+    private static final String PARSE_TIMETABLE_API_URL = AppConfig.BACKEND_BASE_URL + "/api/planner/parse-timetable";
 
     private ActivityResultLauncher<String> timetablePickerLauncher;
     private TextInputEditText currentDialogEtTimetable;
@@ -812,6 +812,7 @@ public class PlannerActivity extends AppCompatActivity {
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestMethod("POST");
                     conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+                    conn.setRequestProperty(AppConfig.APP_TOKEN_HEADER, AppConfig.APP_TOKEN_VALUE);
                     conn.setConnectTimeout(15000);
                     conn.setReadTimeout(55000);
                     conn.setDoOutput(true);
@@ -1188,6 +1189,7 @@ public class PlannerActivity extends AppCompatActivity {
                 conn.setDoOutput(true);
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+                conn.setRequestProperty(AppConfig.APP_TOKEN_HEADER, AppConfig.APP_TOKEN_VALUE);
                 conn.setConnectTimeout(15000);
                 conn.setReadTimeout(60000);
 

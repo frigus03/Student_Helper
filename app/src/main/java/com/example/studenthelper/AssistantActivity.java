@@ -55,7 +55,7 @@ public class AssistantActivity extends AppCompatActivity {
     public static final String EXTRA_NOTE_TITLE = "extra_note_title";
     public static final String EXTRA_NOTE_ID = "extra_note_id";
 
-    private static final String CHAT_API_URL = "http://10.0.2.2:3000/api/chat";
+    private static final String CHAT_API_URL = AppConfig.BACKEND_BASE_URL + "/api/chat";
 
     private DrawerLayout drawerLayout;
     private RecyclerView rvChatSessions;
@@ -240,7 +240,11 @@ public class AssistantActivity extends AppCompatActivity {
                 public void onQuizClick(Note note) {
                     Intent intent = new Intent(AssistantActivity.this, QuizActivity.class);
                     intent.putExtra(QuizActivity.EXTRA_SUBJECT, note.getSubject());
-                    intent.putExtra(QuizActivity.EXTRA_MATERIAL, note.getContent());
+                    String material = (note.getContent() != null && !note.getContent().trim().isEmpty())
+                            ? note.getContent()
+                            : note.getAiSummary();
+                    intent.putExtra(QuizActivity.EXTRA_MATERIAL, material != null ? material : "");
+                    intent.putExtra(QuizActivity.EXTRA_FILE_URL, note.getFileUrl());
                     intent.putExtra(QuizActivity.EXTRA_NOTE_TITLE, note.getTitle());
                     intent.putExtra(QuizActivity.EXTRA_NOTE_ID, note.getId());
                     startActivity(intent);
@@ -749,6 +753,7 @@ public class AssistantActivity extends AppCompatActivity {
             connection.setReadTimeout(70000);
             connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            connection.setRequestProperty(AppConfig.APP_TOKEN_HEADER, AppConfig.APP_TOKEN_VALUE);
 
             JSONObject requestBody = new JSONObject();
             requestBody.put("message", message);

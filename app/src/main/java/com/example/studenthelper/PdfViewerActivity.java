@@ -100,6 +100,7 @@ public class PdfViewerActivity extends AppCompatActivity {
         }
 
         HttpURLConnection connection = (HttpURLConnection) new URL(pathOrUrl).openConnection();
+        connection.setRequestProperty(AppConfig.APP_TOKEN_HEADER, AppConfig.APP_TOKEN_VALUE);
         connection.setConnectTimeout(15000);
         connection.setReadTimeout(30000);
         connection.setInstanceFollowRedirects(true);

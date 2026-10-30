@@ -48,7 +48,7 @@ import java.util.concurrent.Executors;
 
 public class NotesActivity extends AppCompatActivity {
 
-    private static final String UPLOAD_API_URL = "http://10.0.2.2:3000/api/upload";
+    private static final String UPLOAD_API_URL = AppConfig.BACKEND_BASE_URL + "/api/upload";
 
     private NotesAdapter notesAdapter;
 
@@ -186,7 +186,11 @@ public class NotesActivity extends AppCompatActivity {
             public void onQuizClick(Note note) {
                 Intent intent = new Intent(NotesActivity.this, QuizActivity.class);
                 intent.putExtra(QuizActivity.EXTRA_SUBJECT, note.getSubject());
-                intent.putExtra(QuizActivity.EXTRA_MATERIAL, note.getContent());
+                String material = (note.getContent() != null && !note.getContent().trim().isEmpty())
+                        ? note.getContent()
+                        : note.getAiSummary();
+                intent.putExtra(QuizActivity.EXTRA_MATERIAL, material != null ? material : "");
+                intent.putExtra(QuizActivity.EXTRA_FILE_URL, note.getFileUrl());
                 intent.putExtra(QuizActivity.EXTRA_NOTE_TITLE, note.getTitle());
                 intent.putExtra(QuizActivity.EXTRA_NOTE_ID, note.getId());
                 startActivity(intent);
@@ -426,7 +430,11 @@ public class NotesActivity extends AppCompatActivity {
                 .setNeutralButton(R.string.btn_practice_quiz, (d, which) -> {
                     Intent intent = new Intent(NotesActivity.this, QuizActivity.class);
                     intent.putExtra(QuizActivity.EXTRA_SUBJECT, note.getSubject());
-                    intent.putExtra(QuizActivity.EXTRA_MATERIAL, note.getContent());
+                    String material = (note.getContent() != null && !note.getContent().trim().isEmpty())
+                            ? note.getContent()
+                            : note.getAiSummary();
+                    intent.putExtra(QuizActivity.EXTRA_MATERIAL, material != null ? material : "");
+                    intent.putExtra(QuizActivity.EXTRA_FILE_URL, note.getFileUrl());
                     intent.putExtra(QuizActivity.EXTRA_NOTE_TITLE, note.getTitle());
                     intent.putExtra(QuizActivity.EXTRA_NOTE_ID, note.getId());
                     startActivity(intent);
@@ -487,10 +495,11 @@ public class NotesActivity extends AppCompatActivity {
     private void requestNoteSummary(Note note, TextView tvSummary, View btnGenerate) {
         executor.execute(() -> {
             try {
-                URL url = new URL("http://10.0.2.2:3000/api/summarize");
+                URL url = new URL(AppConfig.BACKEND_BASE_URL + "/api/summarize");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setRequestProperty(AppConfig.APP_TOKEN_HEADER, AppConfig.APP_TOKEN_VALUE);
                 conn.setConnectTimeout(10000);
                 conn.setReadTimeout(60000);
                 conn.setDoOutput(true);
@@ -674,6 +683,7 @@ public class NotesActivity extends AppCompatActivity {
                 conn.setDoOutput(true);
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+                conn.setRequestProperty(AppConfig.APP_TOKEN_HEADER, AppConfig.APP_TOKEN_VALUE);
                 conn.setConnectTimeout(15000);
                 conn.setReadTimeout(60000);
 

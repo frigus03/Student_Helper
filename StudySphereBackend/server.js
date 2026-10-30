@@ -38,6 +38,27 @@ const upload = multer({
 
 app.use(express.json({ limit: "5mb" }));
 
+// Security: Shared secret protection to prevent unauthorized public abuse of Gemini API & storage
+const APP_SECRET = process.env.APP_SHARED_SECRET || "StudySphere_Secure_App_Key_2026";
+
+app.use((req, res, next) => {
+  // Always permit root health check and static uploads access
+  if (req.path === "/" || req.path.startsWith("/uploads/")) {
+    return next();
+  }
+
+  const clientToken = req.headers["x-app-token"] || req.headers["x-api-key"] || req.query.token;
+  if (!clientToken || clientToken !== APP_SECRET) {
+    console.warn(`[Security Alert] Blocked unauthorized request to ${req.method} ${req.path} from ${req.ip}`);
+    return res.status(401).json({
+      success: false,
+      error: "Unauthorized: Missing or invalid x-app-token header."
+    });
+  }
+
+  next();
+});
+
 // Helper to call Gemini REST API securely (supports single prompt or multi-turn contents array)
 async function callGemini(contentsOrPrompt, systemInstruction = "", expectJson = false, isRetry = false) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -318,17 +339,44 @@ app.post("/api/summarize", async (req, res) => {
 // 3. Adaptive Quiz Generation with Concept Tagging & YouTube Recommendations
 app.post("/api/quiz/generate", async (req, res) => {
   try {
-    const { subject, material, title, masteryLevel, weakConcepts, count } = req.body;
+    const { subject, material, title, masteryLevel, weakConcepts, count, fileUrl } = req.body;
     const numQuestions = Math.min(Math.max(Number(count) || 5, 3), 10);
     const mastery = typeof masteryLevel === "number" ? masteryLevel : 0.5;
 
+    let studyMaterial = (material || "").trim();
+
+    // If material is missing or too short, attempt to extract directly from uploaded file on disk
+    if ((!studyMaterial || studyMaterial.length < 20) && fileUrl && fileUrl.includes("/uploads/")) {
+      try {
+        const storedName = path.basename(fileUrl);
+        const diskPath = path.join(UPLOAD_DIR, storedName);
+        if (fs.existsSync(diskPath)) {
+          const ext = path.extname(diskPath).toLowerCase();
+          if (ext === ".pdf") {
+            const buf = fs.readFileSync(diskPath);
+            const parsed = await pdfParse(buf);
+            studyMaterial = (parsed.text || "").trim();
+            console.log(`Extracted ${studyMaterial.length} chars from file for quiz: ${storedName}`);
+          } else if (ext === ".txt" || ext === ".md") {
+            studyMaterial = fs.readFileSync(diskPath, "utf-8").trim();
+            console.log(`Read ${studyMaterial.length} chars from text file for quiz: ${storedName}`);
+          }
+        }
+      } catch (e) {
+        console.warn("Could not extract material for quiz from stored file:", e.message);
+      }
+    }
+
     let weakPointsDirective = "";
     if (Array.isArray(weakConcepts) && weakConcepts.length > 0) {
-      weakPointsDirective =
-        `\nADAPTIVE LEARNING FOCUS (CRITICAL):\n` +
-        `In previous quizzes, the student struggled with these specific concepts:\n` +
-        weakConcepts.map(c => `- ${c}`).join("\n") + "\n" +
-        `Prioritize generating questions that specifically test, explain, and reinforce these weak concepts to close their learning gaps.\n`;
+      const validConcepts = weakConcepts.filter(c => typeof c === "string" && c.trim().length > 0);
+      if (validConcepts.length > 0) {
+        weakPointsDirective =
+          `\nADAPTIVE LEARNING FOCUS:\n` +
+          `In previous quizzes, the student struggled with these specific concepts:\n` +
+          validConcepts.map(c => `- ${c}`).join("\n") + "\n" +
+          `CRITICAL RULE ON WEAK CONCEPTS: ONLY test a weak concept if it is GENUINELY part of and relevant to "${title || subject}" and the provided study material. NEVER force unrelated concepts (for example, NEVER introduce physics or Newton's laws into financial derivatives, options, literature, or economics).\n`;
+      }
     }
 
     let curveGuidance = "";
@@ -356,7 +404,7 @@ ${weakPointsDirective}
 
 Source Study Material Context:
 """
-${(material || "Core concepts of " + (title || subject || "Course Material")).substring(0, 15000)}
+${(studyMaterial || "Core concepts of " + (title || subject || "Course Material")).substring(0, 15000)}
 """
 
 You MUST return a JSON object with this exact schema:

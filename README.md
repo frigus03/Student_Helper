@@ -159,17 +159,20 @@ The system utilizes a hybrid cloud architecture combining **Firebase (Auth & Fir
 ```bash
 cd StudySphereBackend
 npm install
-# Ensure .env contains your Gemini API key:
-# GEMINI_API_KEY=your_key_here
+# Copy .env.example to .env and configure your keys:
 # PORT=3000
+# GEMINI_API_KEY=your_gemini_api_key_here
+# GEMINI_MODEL=gemini-2.5-flash
+# APP_SHARED_SECRET=StudySphere_Secure_App_Key_2026
 npm start
 ```
 
 ### 2. Android Studio Setup
-1. Open the project in **Android Studio Ladybug / Koala or newer**.
-2. Sync Project with Gradle Files.
-3. Run on an Android Emulator (API 29+) or physical device.
-   * *Note:* The Android client connects to `http://10.0.2.2:3000` by default (standard loopback address for the Android emulator accessing host localhost).
+1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/) and enable **Authentication** (Email/Password) and **Cloud Firestore**.
+2. Download your `google-services.json` from Firebase and place it into the `app/` folder (`app/google-services.json`).
+3. Open the project in **Android Studio Ladybug / Koala or newer**.
+4. In `app/src/main/java/com/example/studenthelper/AppConfig.java`, verify the backend URL (`http://10.0.2.2:3000` for Android emulator, or your deployed cloud backend URL).
+5. Sync Project with Gradle Files and run on an Android Emulator (API 29+) or physical device.
 
 ---
 
