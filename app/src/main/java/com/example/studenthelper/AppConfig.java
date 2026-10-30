@@ -17,3 +17,4 @@ public final class AppConfig {
     public static final String APP_TOKEN_HEADER = "x-app-token";
     public static final String APP_TOKEN_VALUE = "StudySphere_Secure_App_Key_2026";
 }
+
